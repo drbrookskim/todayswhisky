@@ -1,14 +1,30 @@
+/**
+ * PROJECT: Today's Whiskey (오늘의 위스키)
+ * DESCRIPTION: A personalized whiskey recommendation engine based on MBTI and Biorhythms.
+ * AUTHOR: Spirit Guide Curation Service
+ * * [TECHNOLOGIES]
+ * - React (Functional Components, Hooks)
+ * - Tailwind CSS (Styling)
+ * - Lucide React (Icons)
+ * * [HOW TO RUN LOCALLY]
+ * 1. Create a new React project (e.g., `npm create vite@latest`)
+ * 2. Install dependencies: `npm install lucide-react`
+ * 3. Ensure Tailwind CSS is configured in your project.
+ * 4. Replace your App.jsx content with this file.
+ * 5. Run `npm run dev`.
+ */
+
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   Moon, Sun, GlassWater, Search, RefreshCcw, 
   Activity, User, Thermometer, Info, 
   Languages, Heart, X, Calendar as CalendarIcon,
   TrendingUp, Wind, Zap, ShieldCheck, HelpCircle, CheckCircle2,
-  Sparkles, Coffee, AlertCircle, Quote, ChevronDown
+  Sparkles, Coffee, AlertCircle, Quote, ChevronDown, ChevronLeft, ChevronRight
 } from 'lucide-react';
 
 /**
- * --- 데이터 및 상수 ---
+ * --- DATA AND CONSTANTS ---
  */
 
 const PRICE_RANGES = {
@@ -17,6 +33,7 @@ const PRICE_RANGES = {
   tier_3: { label: { ko: "20~50만원", en: "200k~500k KRW" }, min: 200001, max: 500000 },
 };
 
+// Emotional exclusion rules (contradictory emotions)
 const MOOD_EXCLUSIONS = {
   anger: ['joy', 'trust', 'love', 'anticipation'],
   joy: ['anger', 'sadness', 'disgust', 'despair'],
@@ -68,7 +85,7 @@ const WHISKEY_DATABASE = [
 ];
 
 /**
- * --- 요약 문구 후보 데이터 ---
+ * --- SUMMARY PHRASE CANDIDATES ---
  */
 const SUMMARY_INTROS = [
   { ko: "한 마디로 말씀드리면,", en: "In a word," },
@@ -108,7 +125,7 @@ const MOODS = [
 ];
 
 /**
- * --- 유틸리티 함수 ---
+ * --- UTILITY FUNCTIONS ---
  */
 
 const calculateBiorhythm = (dateStr, mbti, moods) => {
@@ -153,7 +170,78 @@ const formatDate = (dateStr) => {
 };
 
 /**
- * --- 메인 컴포넌트 ---
+ * --- CUSTOM CALENDAR POPUP COMPONENT ---
+ */
+const CalendarPopup = ({ selectedDate, onSelect, onClose, isDarkMode }) => {
+  const [viewDate, setViewDate] = useState(new Date(selectedDate));
+  
+  const daysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
+  const firstDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
+
+  const currentYear = viewDate.getFullYear();
+  const currentMonth = viewDate.getMonth();
+
+  const handlePrevMonth = () => setViewDate(new Date(currentYear, currentMonth - 1, 1));
+  const handleNextMonth = () => setViewDate(new Date(currentYear, currentMonth + 1, 1));
+
+  const days = [];
+  const totalDays = daysInMonth(currentYear, currentMonth);
+  const startDay = firstDayOfMonth(currentYear, currentMonth);
+
+  for (let i = 0; i < startDay; i++) days.push(null);
+  for (let d = 1; d <= totalDays; d++) days.push(d);
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+      <div 
+        className={`w-full max-w-sm rounded-[32px] border overflow-hidden shadow-2xl ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-black">{currentYear}년 {currentMonth + 1}월</h3>
+            <div className="flex gap-1">
+              <button onClick={handlePrevMonth} className="p-2 rounded-xl hover:bg-amber-500/10 transition-colors"><ChevronLeft size={20}/></button>
+              <button onClick={handleNextMonth} className="p-2 rounded-xl hover:bg-amber-500/10 transition-colors"><ChevronRight size={20}/></button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-7 text-center">
+            {['일', '월', '화', '수', '목', '금', '토'].map(d => (
+              <span key={d} className="text-[10px] font-bold opacity-40 uppercase py-2">{d}</span>
+            ))}
+            {days.map((day, idx) => {
+              if (day === null) return <div key={`empty-${idx}`} />;
+              const isSelected = new Date(selectedDate).toDateString() === new Date(currentYear, currentMonth, day).toDateString();
+              return (
+                <button
+                  key={day}
+                  onClick={() => {
+                    const newDate = new Date(currentYear, currentMonth, day);
+                    onSelect(newDate.toISOString().split('T')[0]);
+                  }}
+                  className={`aspect-square flex items-center justify-center text-sm font-bold rounded-xl transition-all ${isSelected ? 'bg-amber-500 text-slate-950 scale-110' : 'hover:bg-amber-500/10'}`}
+                >
+                  {day}
+                </button>
+              );
+            })}
+          </div>
+
+          <button 
+            onClick={onClose}
+            className="w-full py-4 rounded-2xl bg-slate-800/50 text-xs font-bold uppercase tracking-widest hover:bg-slate-800 transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/**
+ * --- MAIN APP COMPONENT ---
  */
 
 export default function App() {
@@ -163,11 +251,9 @@ export default function App() {
   const [mbti, setMbti] = useState('INTJ');
   const [selectedMoods, setSelectedMoods] = useState([]);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
-  
-  const dateInputRef = useRef(null);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDarkMode);
@@ -181,40 +267,8 @@ export default function App() {
     } else {
       const conflicts = MOOD_EXCLUSIONS[id] || [];
       const filteredMoods = selectedMoods.filter(m => !conflicts.includes(m));
-      
-      if (filteredMoods.length < 3) {
-        setSelectedMoods([...filteredMoods, id]);
-      }
+      if (filteredMoods.length < 3) setSelectedMoods([...filteredMoods, id]);
     }
-  };
-
-  const handleDateChange = (e) => {
-    if (e.target.value) {
-      setDate(e.target.value);
-      setShowDatePicker(false);
-    }
-  };
-
-  const getDrinkingAdvice = (b, lang) => {
-    if (b > 0.3) {
-      return lang === 'ko' 
-        ? "신체적 활력이 최상입니다. 뇌의 감각 정보 처리 능력이 높아 고도수 위스키의 복합적인 풍미를 섬세하게 포착하기 좋은 날입니다." 
-        : "Peak condition! A perfect day to handle the intense flavors of high-ABV spirits.";
-    }
-    if (b < -0.3) {
-      return lang === 'ko' 
-        ? "정서적 에너지가 낮아진 상태입니다. 뇌가 휴식을 필요로 하므로, 가벼운 도수나 부드러운 향취로 신경계를 달래주는 것이 현명합니다." 
-        : "Low energy day. Better to soothe yourself with a smooth, low-ABV whiskey.";
-    }
-    return lang === 'ko' 
-      ? "항상성이 안정적으로 유지되고 있습니다. 평소의 기호에 맞춘 표준적인 시음이 뇌에 가장 쾌적한 보상을 제공할 것입니다." 
-      : "Well-balanced state. An ideal day to enjoy a standard ABV whiskey.";
-  };
-
-  const getAbvRecommendation = (b) => {
-    if (b > 0.3) return { label: lang === 'ko' ? "고도수 (50%+)" : "High ABV (50%+)", range: "CS/High" };
-    if (b < -0.3) return { label: lang === 'ko' ? "저도수 (<40%)" : "Low ABV (<40%)", range: "Low/Smooth" };
-    return { label: lang === 'ko' ? "표준 (40~46%)" : "Standard (40-46%)", range: "Standard" };
   };
 
   const runRecommendation = () => {
@@ -237,18 +291,17 @@ export default function App() {
         selectedMoods.forEach(moodId => {
           if (w.mood.includes(moodId)) moodScore += 200;
         });
-        
         return { 
           ...w, 
           score: mbtiScore + moodScore,
-          mbtiMatch: mbtiScore > 0,
-          moodMatchCount: moodScore / 200
+          mbtiMatch: mbtiScore > 0
         };
       });
 
       scored.sort((a, b) => b.score - a.score);
       const topPick = scored[0] || baseList[0];
       
+      // Randomize summary intros and closing statements
       topPick.randomIntro = SUMMARY_INTROS[Math.floor(Math.random() * SUMMARY_INTROS.length)];
       topPick.randomSummary = topPick.mbtiMatch 
         ? MBTI_SUMMARIES[Math.floor(Math.random() * MBTI_SUMMARIES.length)]
@@ -290,6 +343,28 @@ export default function App() {
     return translations[key]?.[lang] || key;
   };
 
+  const getDrinkingAdvice = (b, lang) => {
+    if (b > 0.3) {
+      return lang === 'ko' 
+        ? "신체적 활력이 최상입니다. 뇌의 감각 정보 처리 능력이 높아 고도수 위스키의 복합적인 풍미를 섬세하게 포착하기 좋은 날입니다." 
+        : "Peak condition! A perfect day to handle the intense flavors of high-ABV spirits.";
+    }
+    if (b < -0.3) {
+      return lang === 'ko' 
+        ? "정서적 에너지가 낮아진 상태입니다. 뇌가 휴식을 필요로 하므로, 가벼운 도수나 부드러운 향취로 신경계를 달래주는 것이 현명합니다." 
+        : "Low energy day. Better to soothe yourself with a smooth, low-ABV whiskey.";
+    }
+    return lang === 'ko' 
+      ? "항상성이 안정적으로 유지되고 있습니다. 평소의 기호에 맞춘 표준적인 시음이 뇌에 가장 쾌적한 보상을 제공할 것입니다." 
+      : "Well-balanced state. An ideal day to enjoy a standard ABV whiskey.";
+  };
+
+  const getAbvRecommendation = (b) => {
+    if (b > 0.3) return { label: lang === 'ko' ? "고도수 (50%+)" : "High ABV (50%+)", range: "CS/High" };
+    if (b < -0.3) return { label: lang === 'ko' ? "저도수 (<40%)" : "Low ABV (<40%)", range: "Low/Smooth" };
+    return { label: lang === 'ko' ? "표준 (40~46%)" : "Standard (40-46%)", range: "Standard" };
+  };
+
   return (
     <div className={`min-h-screen transition-all duration-500 ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-white text-slate-900'}`}>
       <style>{`
@@ -297,18 +372,6 @@ export default function App() {
         body { font-family: 'Inter', sans-serif; }
         .glass-effect { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
         h1, h2, h3, .title-font { font-style: normal !important; }
-        input[type="date"]::-webkit-calendar-picker-indicator {
-          background: transparent;
-          bottom: 0;
-          color: transparent;
-          cursor: pointer;
-          height: auto;
-          left: 0;
-          position: absolute;
-          right: 0;
-          top: 0;
-          width: auto;
-        }
       `}</style>
       
       <nav className={`sticky top-0 z-50 glass-effect border-b ${isDarkMode ? 'bg-slate-950/70 border-slate-800' : 'bg-white/70 border-slate-200'}`}>
@@ -358,37 +421,17 @@ export default function App() {
 
                 <section className={`p-6 md:p-8 rounded-3xl border ${isDarkMode ? 'bg-slate-900/50 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
                   <label className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider mb-6 opacity-50"><Activity size={16} /> {t('date')}</label>
-                  
-                  <div className="relative group">
-                    {/* UI Button layer */}
-                    {!showDatePicker ? (
-                      <button 
-                        onClick={() => setShowDatePicker(true)}
-                        className={`w-full p-4 rounded-xl border font-bold flex items-center justify-between transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 hover:bg-slate-700' : 'bg-white border-slate-200 shadow-sm hover:bg-slate-50'}`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <CalendarIcon size={18} className="text-amber-500" />
-                          <span className={isDarkMode ? 'text-slate-100' : 'text-slate-900'}>{formatDate(date)}</span>
-                        </div>
-                        <ChevronDown size={18} className="opacity-30" />
-                      </button>
-                    ) : (
-                      <div className="relative">
-                        <input 
-                          type="date" 
-                          value={date} 
-                          onChange={handleDateChange}
-                          className={`w-full p-4 rounded-xl border font-bold ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-100' : 'bg-white border-slate-200 text-slate-900 shadow-sm'}`}
-                          autoFocus
-                          onBlur={() => setShowDatePicker(false)}
-                        />
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
-                          <ChevronDown size={18} />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  
+                  <button 
+                    onClick={() => setShowCalendar(true)}
+                    className={`w-full p-4 rounded-xl border font-bold flex items-center justify-between transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 hover:bg-slate-700' : 'bg-white border-slate-200 shadow-sm hover:bg-slate-50'}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <CalendarIcon size={18} className="text-amber-500" />
+                      <span>{formatDate(date)}</span>
+                    </div>
+                    <ChevronDown size={18} className="opacity-30" />
+                  </button>
+
                   <div className="mt-8 space-y-6">
                     {[
                       { key: 'bioPhys', val: biorhythm.p, color: 'bg-rose-500' },
@@ -576,6 +619,19 @@ export default function App() {
           </div>
         )}
       </main>
+
+      {/* CALENDAR MODAL */}
+      {showCalendar && (
+        <CalendarPopup 
+          selectedDate={date} 
+          isDarkMode={isDarkMode}
+          onSelect={(newDate) => {
+            setDate(newDate);
+            setShowCalendar(false);
+          }} 
+          onClose={() => setShowCalendar(false)} 
+        />
+      )}
 
       <footer className="max-w-6xl mx-auto px-4 py-12 text-center">
         <div className="w-12 h-px bg-slate-800 mx-auto mb-8"></div>
