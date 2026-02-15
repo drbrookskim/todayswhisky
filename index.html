@@ -26,6 +26,20 @@
             darkMode: 'class',
             theme: {
                 extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            200: '#99f6e4',
+                            300: '#5eead4',
+                            400: '#2dd4bf',
+                            500: '#14b8a6', // Teal 500 for navigation/accents
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                        }
+                    },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                     },
@@ -41,8 +55,8 @@
         /* Custom scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        ::-webkit-scrollbar-thumb { background: #115e59; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #14b8a6; }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -59,14 +73,12 @@
 
         /**
          * --- Lucide Icon Component ---
-         * React의 DOM 관리와 충돌하지 않도록 useRef를 사용하여 Lucide가 관리하는 전용 영역을 생성합니다.
          */
         const Icon = ({ name, size = 24, className = "" }) => {
             const wrapperRef = useRef(null);
 
             useEffect(() => {
                 if (wrapperRef.current && window.lucide) {
-                    // 컨테이너 내부에 Lucide 전용 엘리먼트 생성
                     wrapperRef.current.innerHTML = `<i data-lucide="${name}" style="width: ${size}px; height: ${size}px;" class="${className}"></i>`;
                     window.lucide.createIcons({
                         parent: wrapperRef.current
@@ -78,13 +90,26 @@
         };
 
         /**
-         * --- 데이터 및 상수 ---
+         * --- 전역 상수 및 데이터 ---
          */
         const PRICE_RANGES = {
             tier_1: { label: { ko: "10만원 이하", en: "Under 100k KRW" }, min: 0, max: 100000 },
             tier_2: { label: { ko: "10~20만원", en: "100k~200k KRW" }, min: 100001, max: 200000 },
             tier_3: { label: { ko: "20~50만원", en: "200k~500k KRW" }, min: 200001, max: 500000 },
         };
+
+        const MOODS = [
+            { id: "anger", icon: "💢", label: { ko: "분노", en: "Anger" }, tags: ["피트", "스모키", "스파이시", "페퍼"] },
+            { id: "joy", icon: "✨", label: { ko: "기쁨", en: "Joy" }, tags: ["시트러스", "허니", "플로럴", "바닐라"] },
+            { id: "sadness", icon: "🌧️", label: { ko: "슬픔", en: "Sadness" }, tags: ["하이랜드", "그레인", "미네랄", "그래스"] },
+            { id: "fear", icon: "🌑", label: { ko: "두려움", en: "Fear" }, tags: ["알코올", "메디컬", "영몰트", "타닌"] },
+            { id: "trust", icon: "🤝", label: { ko: "신뢰", en: "Trust" }, tags: ["스페이사이드", "몰티", "크리미", "오크"] },
+            { id: "disgust", icon: "🤢", label: { ko: "혐오", en: "Disgust" }, tags: ["요오드", "어스", "머스키", "비터"] },
+            { id: "surprise", icon: "⚡", label: { ko: "놀람", en: "Surprise" }, tags: ["캄벨타운", "복잡", "진저", "펑크"] },
+            { id: "anticipation", icon: "🔮", label: { ko: "기대", en: "Anticipation" }, tags: ["라이트", "플로럴", "프루티", "스파이시"] },
+            { id: "love", icon: "💖", label: { ko: "사랑", en: "Love" }, tags: ["셰리", "초콜릿", "허니", "롱피니쉬"] },
+            { id: "despair", icon: "🥀", label: { ko: "절망", en: "Despair" }, tags: ["헤비셰리", "다크초콜릿", "비터", "풀바디"] }
+        ];
 
         const MOOD_EXCLUSIONS = {
             anger: ['joy', 'trust', 'love', 'anticipation'],
@@ -121,19 +146,19 @@
         const WHISKEY_DATABASE = [
             { id: "T1_01", name: "Monkey Shoulder", price: 55000, abv: 40, tags: ["바닐라", "오렌지", "꿀"], mbti: ["ENFP", "ESFP"], mood: ["joy", "anticipation"] },
             { id: "T1_02", name: "Buffalo Trace", price: 65000, abv: 45, tags: ["카라멜", "바닐라", "오크"], mbti: ["ESTJ", "ESFJ"], mood: ["trust", "joy"] },
-            { id: "T1_03", name: "Talisker 10", price: 78000, abv: 45.8, tags: ["피트", "소금", "페퍼"], mbti: ["ISTP", "INTJ"], mood: ["anger", "sadness"] },
+            { id: "T1_03", name: "Talisker 10", price: 78000, abv: 45.8, tags: ["피트", "소금", "페퍼", "스파이시"], mbti: ["ISTP", "INTJ"], mood: ["anger", "sadness", "disgust"] },
             { id: "T1_04", name: "Glendronach 12", price: 95000, abv: 43, tags: ["셰리", "과일", "달콤"], mbti: ["ENFJ", "ISFJ"], mood: ["love", "trust"] },
             { id: "T1_05", name: "Wild Turkey 101", price: 52000, abv: 50.5, tags: ["스파이시", "바닐라", "대담한"], mbti: ["ESTJ", "ESTP"], mood: ["anger", "joy"] },
-            { id: "T2_01", name: "Ardbeg Corryvreckan", price: 185000, abv: 57.1, tags: ["피트", "스모키", "다크"], mbti: ["INTJ", "ENTP"], mood: ["anger", "surprise"] },
+            { id: "T2_01", name: "Ardbeg Corryvreckan", price: 185000, abv: 57.1, tags: ["피트", "스모키", "다크", "요오드"], mbti: ["INTJ", "ENTP", "ISTP"], mood: ["anger", "surprise", "disgust"] },
             { id: "T2_02", name: "Balvenie 12 Doublewood", price: 115000, abv: 40, tags: ["허니", "오크", "부드러움"], mbti: ["ISFJ", "ISTJ"], mood: ["trust", "joy"] },
             { id: "T2_03", name: "Macallan 12 Sherry Oak", price: 155000, abv: 40, tags: ["셰리", "건포도", "클래식"], mbti: ["ISTJ", "ENFJ"], mood: ["trust", "love"] },
-            { id: "T2_04", name: "Bruichladdich Classic Laddie", price: 110000, abv: 50, tags: ["미네랄", "꽃향", "데이터"], mbti: ["INTP", "ENTP"], mood: ["surprise", "joy"] },
-            { id: "T2_05", name: "Laphroaig Quarter Cask", price: 130000, abv: 48, tags: ["피트", "요오드", "강렬한"], mbti: ["ISTP", "INTJ"], mood: ["disgust", "anger"] },
+            { id: "T2_04", name: "Bruichladdich Classic Laddie", price: 110000, abv: 50, tags: ["미네랄", "꽃향", "데이터", "프루티"], mbti: ["INTP", "ENTP"], mood: ["surprise", "joy", "anticipation"] },
+            { id: "T2_05", name: "Laphroaig Quarter Cask", price: 130000, abv: 48, tags: ["피트", "요오드", "강렬한"], mbti: ["ISTP", "INTJ"], mood: ["disgust", "anger", "despair"] },
             { id: "T3_01", name: "Glendronach 18", price: 420000, abv: 46, tags: ["다크셰리", "초콜릿", "리치"], mbti: ["ENFJ", "INFJ"], mood: ["love", "despair"] },
-            { id: "T3_02", name: "Hibiki Japanese Harmony", price: 230000, abv: 43, tags: ["섬세한", "플로럴", "우아한"], mbti: ["ISFP", "INFP"], mood: ["joy", "love"] },
-            { id: "T3_03", name: "Springbank 15", price: 480000, abv: 46, tags: ["오일", "소금", "복잡한"], mbti: ["INFP", "INTJ"], mood: ["surprise", "sadness"] },
+            { id: "T3_02", name: "Hibiki Japanese Harmony", price: 230000, abv: 43, tags: ["섬세한", "플로럴", "우아한"], mbti: ["ISFP", "INFP"], mood: ["joy", "love", "anticipation"] },
+            { id: "T3_03", name: "Springbank 15", price: 480000, abv: 46, tags: ["오일", "소금", "복잡한"], mbti: ["INFP", "INTJ", "ENTP"], mood: ["surprise", "sadness", "disgust"] },
             { id: "T3_04", name: "WhistlePig 12 Rye", price: 280000, abv: 43, tags: ["라이", "스파이스", "복잡한"], mbti: ["ESTP", "ENTP"], mood: ["anticipation", "joy"] },
-            { id: "T3_05", name: "Lagavulin 16", price: 195000, abv: 43, tags: ["피트", "스모키", "깊은"], mbti: ["INTJ", "ISTP"], mood: ["sadness", "trust"] },
+            { id: "T3_05", name: "Lagavulin 16", price: 195000, abv: 43, tags: ["피트", "스모키", "깊은"], mbti: ["INTJ", "ISTP", "ENTP"], mood: ["sadness", "trust", "despair"] },
         ];
 
         const SUMMARY_INTROS = [
@@ -160,19 +185,6 @@
             { ko: "고착된 생각의 흐름을 전환해 줄, 생동감 넘치는 오늘의 반전입니다.", en: "it's a vibrant twist that will shift the flow of stuck thoughts today." }
         ];
 
-        const MOODS = [
-            { id: "anger", icon: "💢", label: { ko: "분노", en: "Anger" }, tags: ["피트", "스모키", "스파이시", "페퍼"] },
-            { id: "joy", icon: "✨", label: { ko: "기쁨", en: "Joy" }, tags: ["시트러스", "허니", "플로럴", "바닐나"] },
-            { id: "sadness", icon: "🌧️", label: { ko: "슬픔", en: "Sadness" }, tags: ["하이랜드", "그레인", "미네랄", "그래스"] },
-            { id: "fear", icon: "🌑", label: { ko: "두려움", en: "Fear" }, tags: ["알코올", "메디컬", "영몰트", "타닌"] },
-            { id: "trust", icon: "🤝", label: { ko: "신뢰", en: "Trust" }, tags: ["스페이사이드", "몰티", "크리미", "오크"] },
-            { id: "disgust", icon: "🤢", label: { ko: "혐오", en: "Disgust" }, tags: ["요오드", "어스", "머스키", "비터"] },
-            { id: "surprise", icon: "⚡", label: { ko: "놀람", en: "Surprise" }, tags: ["캄벨타운", "복잡", "진저", "펑크"] },
-            { id: "anticipation", icon: "🔮", label: { ko: "기대", en: "Anticipation" }, tags: ["라이트", "플로럴", "프루티", "스파이스"] },
-            { id: "love", icon: "💖", label: { ko: "사랑", en: "Love" }, tags: ["셰리", "초콜릿", "허니", "롱피니쉬"] },
-            { id: "despair", icon: "🥀", label: { ko: "절망", en: "Despair" }, tags: ["헤비셰리", "다크초콜릿", "비터", "풀바디"] }
-        ];
-
         /**
          * --- UTILITY FUNCTIONS ---
          */
@@ -191,19 +203,19 @@
         };
 
         const getBioStatus = (val) => {
-            if (val > 0.6) return { label: "Best", color: "text-amber-500" };
+            if (val > 0.6) return { label: "Best", color: "text-blue-600" }; // Change to Blue
             if (val > 0.2) return { label: "Good", color: "text-emerald-500" };
             if (val >= -0.2) return { label: "Neutral", color: "text-slate-400" };
-            if (val >= -0.6) return { label: "Bad", color: "text-orange-500" };
-            return { label: "Worst", color: "text-rose-500" };
+            if (val >= -0.6) return { label: "Bad", color: "text-rose-400" };
+            return { label: "Worst", color: "text-red-600" }; // Change to Red
         };
 
         const getArchetypeStatus = (score) => {
-            if (score >= 700) return { label: "Best", color: "text-amber-500" };
+            if (score >= 700) return { label: "Best", color: "text-teal-500" };
             if (score >= 400) return { label: "Good", color: "text-emerald-500" };
             if (score >= 200) return { label: "Neutral", color: "text-slate-400" };
-            if (score > 0) return { label: "Bad", color: "text-orange-500" };
-            return { label: "Worst", color: "text-rose-500" };
+            if (score > 0) return { label: "Bad", color: "text-rose-400" };
+            return { label: "Worst", color: "text-rose-600" };
         };
 
         const formatDate = (dateStr) => {
@@ -215,7 +227,7 @@
         };
 
         /**
-         * --- CUSTOM CALENDAR POPUP COMPONENT ---
+         * --- CUSTOM CALENDAR POPUP ---
          */
         const CalendarPopup = ({ selectedDate, onSelect, onClose, isDarkMode }) => {
             const [viewDate, setViewDate] = useState(new Date(selectedDate));
@@ -238,8 +250,8 @@
                             <div className="flex items-center justify-between">
                                 <h3 className="text-xl font-black title-font">{currentYear}년 {currentMonth + 1}월</h3>
                                 <div className="flex gap-1">
-                                    <button onClick={handlePrevMonth} className="p-2 rounded-xl hover:bg-amber-500/10 transition-colors"><Icon name="chevron-left" size={20}/></button>
-                                    <button onClick={handleNextMonth} className="p-2 rounded-xl hover:bg-amber-500/10 transition-colors"><Icon name="chevron-right" size={20}/></button>
+                                    <button onClick={handlePrevMonth} className="p-2 rounded-xl hover:bg-teal-500/10 transition-colors"><Icon name="chevron-left" size={20}/></button>
+                                    <button onClick={handleNextMonth} className="p-2 rounded-xl hover:bg-teal-500/10 transition-colors"><Icon name="chevron-right" size={20}/></button>
                                 </div>
                             </div>
                             <div className="grid grid-cols-7 text-center">
@@ -248,7 +260,7 @@
                                     if (day === null) return <div key={`empty-${idx}`} />;
                                     const isSelected = new Date(selectedDate).toDateString() === new Date(currentYear, currentMonth, day).toDateString();
                                     return (
-                                        <button key={day} onClick={() => { const newDate = new Date(currentYear, currentMonth, day); onSelect(newDate.toISOString().split('T')[0]); }} className={`aspect-square flex items-center justify-center text-sm font-bold rounded-xl transition-all ${isSelected ? 'bg-amber-500 text-slate-950 scale-110' : 'hover:bg-amber-500/10'}`}>{day}</button>
+                                        <button key={day} onClick={() => { const newDate = new Date(currentYear, currentMonth, day); onSelect(newDate.toISOString().split('T')[0]); }} className={`aspect-square flex items-center justify-center text-sm font-bold rounded-xl transition-all ${isSelected ? 'bg-teal-500 text-slate-950 scale-110' : 'hover:bg-teal-500/10'}`}>{day}</button>
                                     );
                                 })}
                             </div>
@@ -260,7 +272,7 @@
         };
 
         /**
-         * --- MAIN APP COMPONENT ---
+         * --- MAIN APP ---
          */
         function App() {
             const [isDarkMode, setIsDarkMode] = useState(true);
@@ -294,22 +306,44 @@
                 setTimeout(() => {
                     const tier = PRICE_RANGES[priceTier];
                     let filtered = WHISKEY_DATABASE.filter(w => w.price >= tier.min && w.price <= tier.max);
+                    
+                    // 바이오리듬에 따른 도수 필터링
                     let abvFiltered = filtered.filter(w => {
                         if (biorhythm.b > 0.3) return w.abv >= 50;
                         if (biorhythm.b < -0.3) return w.abv < 40;
                         return w.abv >= 40 && w.abv <= 46;
                     });
+                    
                     const baseList = abvFiltered.length > 0 ? abvFiltered : filtered;
+                    
                     const scored = baseList.map(w => {
+                        // MBTI 일치 점수 (+300)
                         let mbtiScore = w.mbti.includes(mbti) ? 300 : 0;
+                        
+                        // 기분 점수 (+250 per mood) - 기분의 영향력을 MBTI보다 소폭 높임
                         let moodScore = 0;
-                        selectedMoods.forEach(moodId => { if (w.mood.includes(moodId)) moodScore += 200; });
+                        selectedMoods.forEach(moodId => { 
+                            const mood = MOODS.find(m => m.id === moodId);
+                            if (w.mood.includes(moodId)) moodScore += 250;
+                            
+                            // 풍미 태그와 기분 태그 교차 정합성 보너스
+                            if (mood) {
+                                mood.tags.forEach(tag => {
+                                    if (w.tags.includes(tag)) moodScore += 50;
+                                });
+                            }
+                        });
+
                         return { ...w, score: mbtiScore + moodScore, mbtiMatch: mbtiScore > 0 };
                     });
-                    scored.sort((a, b) => b.score - a.score);
+
+                    // 점수순 정렬
+                    scored.sort((a, b) => b.score - a.score || b.price - a.price);
+                    
                     const topPick = scored[0] || baseList[0];
                     topPick.randomIntro = SUMMARY_INTROS[Math.floor(Math.random() * SUMMARY_INTROS.length)];
                     topPick.randomSummary = topPick.mbtiMatch ? MBTI_SUMMARIES[Math.floor(Math.random() * MBTI_SUMMARIES.length)] : MOOD_SUMMARIES[Math.floor(Math.random() * MOOD_SUMMARIES.length)];
+                    
                     setResult(topPick);
                     setLoading(false);
                     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -340,8 +374,8 @@
             };
 
             const getDrinkingAdvice = (b, l) => {
-                if (b > 0.3) return l === 'ko' ? "신체적 활력이 최상입니다. 뇌의 감각 정보 처리 능력이 높아 고도수 위스키의 복합적인 풍미를 섬세하게 포착하기 좋은 날입니다." : "Peak condition! Perfect sensory processing for high-ABV whiskies.";
-                if (b < -0.3) return l === 'ko' ? "정서적 에너지가 낮아진 상태입니다. 신경계를 달래주는 가벼운 도수나 부드러운 향취가 현명한 선택입니다." : "Low energy day. Choose a smooth, low-ABV whiskey to soothe the mind.";
+                if (b > 0.3) return l === 'ko' ? "신체적 활력이 최상입니다. 뇌의 감각 정보 처리 능력이 높아 고도수 위스키의 복합적인 풍미를 섬세하게 포착하기 좋은 날입니다." : "Peak condition! Perfect sensory processing for high-ABV spirits.";
+                if (b < -0.3) return l === 'ko' ? "정서적 에너지가 낮아진 상태입니다. 신경계를 달래주는 가벼운 도수나 부드러운 향취가 현명한 선택입니다." : "Low energy day. Choose a smooth, low-ABV spirits to soothe the mind.";
                 return l === 'ko' ? "항상성이 안정적으로 유지되고 있습니다. 평소 기호에 맞춘 표준적인 시음이 가장 쾌적한 보상을 제공합니다." : "Balanced state. Ideal for your favorite standard ABV whiskey.";
             };
 
@@ -356,11 +390,11 @@
                     <nav className="sticky top-0 z-50 glass-effect border-b bg-white/70 dark:bg-slate-950/70 border-slate-200 dark:border-slate-800">
                         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20"><Icon name="glass-water" className="text-white" size={24} /></div>
+                                <div className="w-10 h-10 bg-teal-500 rounded-xl flex items-center justify-center shadow-lg shadow-teal-500/20"><Icon name="glass-water" className="text-white" size={24} /></div>
                                 <span className="font-extrabold text-xl tracking-tighter uppercase title-font">{t('heroTitle')}</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <button onClick={() => setLang(lang === 'ko' ? 'en' : 'ko')} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"><Icon name="languages" className="text-amber-500" size={20} /></button>
+                                <button onClick={() => setLang(lang === 'ko' ? 'en' : 'ko')} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"><Icon name="languages" className="text-teal-500" size={20} /></button>
                                 <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"><Icon name={isDarkMode ? "sun" : "moon"} size={20} /></button>
                             </div>
                         </div>
@@ -379,13 +413,13 @@
                                             <label className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider mb-6 opacity-50"><Icon name="user" size={16} /> {t('mbti')}</label>
                                             <div className="grid grid-cols-4 gap-2">
                                                 {Object.keys(MBTI_ARCHETYPES).map(type => (
-                                                    <button key={type} onClick={() => setMbti(type)} className={`py-2 text-sm font-bold rounded-xl transition-all ${mbti === type ? 'bg-amber-500 text-slate-950 scale-105 shadow-lg font-bold' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400'}`}>{type}</button>
+                                                    <button key={type} onClick={() => setMbti(type)} className={`py-2 text-sm font-bold rounded-xl transition-all ${mbti === type ? 'bg-teal-500 text-slate-950 scale-105 shadow-lg font-bold' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400'}`}>{type}</button>
                                                 ))}
                                             </div>
-                                            <div className="mt-6 flex items-start gap-4 p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20">
+                                            <div className="mt-6 flex items-start gap-4 p-4 rounded-2xl bg-teal-500/5 border border-teal-500/20">
                                                 <span className="text-2xl">{MBTI_ARCHETYPES[mbti].icon}</span>
                                                 <div>
-                                                    <h4 className="font-bold text-amber-500 title-font italic-off">{MBTI_ARCHETYPES[mbti].title[lang]}</h4>
+                                                    <h4 className="font-bold text-teal-500 title-font italic-off">{MBTI_ARCHETYPES[mbti].title[lang]}</h4>
                                                     <p className="text-xs opacity-60 mt-1 italic-off">{MBTI_ARCHETYPES[mbti].desc[lang]}</p>
                                                 </div>
                                             </div>
@@ -393,7 +427,7 @@
                                         <section className="p-6 md:p-8 rounded-3xl border bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800">
                                             <label className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider mb-6 opacity-50"><Icon name="activity" size={16} /> 기준일 설정</label>
                                             <button onClick={() => setShowCalendar(true)} className="w-full p-4 rounded-xl border bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 font-bold flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">
-                                                <div className="flex items-center gap-3"><Icon name="calendar" size={18} className="text-amber-500" /><span>{formatDate(date)}</span></div>
+                                                <div className="flex items-center gap-3"><Icon name="calendar" size={18} className="text-teal-500" /><span>{formatDate(date)}</span></div>
                                                 <Icon name="chevron-down" size={18} className="opacity-30" />
                                             </button>
                                             <div className="mt-8 space-y-6">
@@ -417,9 +451,9 @@
                                             <label className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider mb-6 opacity-50"><Icon name="thermometer" size={16} /> {t('price')}</label>
                                             <div className="space-y-2">
                                                 {Object.entries(PRICE_RANGES).map(([key, val]) => (
-                                                    <button key={key} onClick={() => setPriceTier(key)} className={`w-full p-4 rounded-xl flex justify-between items-center transition-all border ${priceTier === key ? 'border-amber-500 bg-amber-500/10 text-slate-950 font-bold' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-800'}`}>
-                                                        <span className={priceTier === key ? 'text-slate-950 font-bold' : 'text-slate-500'}>{val.label[lang]}</span>
-                                                        {priceTier === key && <Icon name="shield-check" className="text-slate-950" size={18} />}
+                                                    <button key={key} onClick={() => setPriceTier(key)} className={`w-full p-4 rounded-xl flex justify-between items-center transition-all border ${priceTier === key ? 'border-teal-500 bg-teal-500/10 text-slate-950 font-bold' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-800'}`}>
+                                                        <span className={priceTier === key ? 'text-teal-600 dark:text-teal-400 font-bold' : 'text-slate-500'}>{val.label[lang]}</span>
+                                                        {priceTier === key && <Icon name="shield-check" className="text-teal-500" size={18} />}
                                                     </button>
                                                 ))}
                                             </div>
@@ -429,7 +463,7 @@
                                             <p className="text-[10px] opacity-40 mb-4 flex items-center gap-1 italic-off"><Icon name="alert-circle" size={10}/> {t('moodExclusionNotice')}</p>
                                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                                                 {MOODS.map(mood => (
-                                                    <button key={mood.id} onClick={() => handleMoodToggle(mood.id)} className={`p-3 rounded-2xl flex flex-col items-center gap-1 transition-all border ${selectedMoods.includes(mood.id) ? 'bg-amber-500 border-amber-400 text-slate-950 scale-105 font-bold' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-60'}`}>
+                                                    <button key={mood.id} onClick={() => handleMoodToggle(mood.id)} className={`p-3 rounded-2xl flex flex-col items-center gap-1 transition-all border ${selectedMoods.includes(mood.id) ? 'bg-teal-500 border-teal-400 text-slate-950 scale-105 font-bold' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-60'}`}>
                                                         <span className="text-xl">{mood.icon}</span><span className="text-[10px] font-bold uppercase">{mood.label[lang]}</span>
                                                     </button>
                                                 ))}
@@ -437,6 +471,7 @@
                                         </section>
                                     </div>
                                 </div>
+                                {/* 추천엔진 가동 버튼만 주황색으로 변경 */}
                                 <button onClick={runRecommendation} disabled={loading || selectedMoods.length === 0} className="w-full py-6 md:py-8 rounded-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xl md:text-2xl shadow-2xl shadow-amber-500/30 transition-all active:scale-95 disabled:opacity-30 flex items-center justify-center gap-3 italic-off">
                                     {loading ? <Icon name="refresh-ccw" className="animate-spin" size={28} /> : <><Icon name="zap" size={28} /> {t('recommend')}</>}
                                 </button>
@@ -444,42 +479,42 @@
                         ) : (
                             <div className="max-w-3xl mx-auto animate-fade-in space-y-8">
                                 <div className="rounded-[40px] overflow-hidden border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-2xl">
-                                    <div className="relative h-64 md:h-80 bg-gradient-to-br from-amber-600 to-amber-900 flex items-center justify-center overflow-hidden">
+                                    <div className="relative h-64 md:h-80 bg-gradient-to-br from-teal-600 to-teal-900 flex items-center justify-center overflow-hidden">
                                         <div className="absolute inset-0 opacity-10 mix-blend-overlay"><div className="absolute top-10 left-10 w-40 h-40 border-8 border-white rounded-full"></div><div className="absolute bottom-10 right-10 w-60 h-60 border-8 border-white rounded-full"></div></div>
                                         <div className="relative z-10 text-center space-y-4">
                                             <div className="w-24 h-24 md:w-32 md:h-32 bg-white/20 backdrop-blur-xl rounded-full flex items-center justify-center border border-white/30 animate-bounce shadow-xl"><Icon name="glass-water" className="text-white" size={48} /></div>
-                                            <div className="px-4 py-1 bg-black/40 backdrop-blur-md rounded-full text-xs font-black text-amber-400 uppercase tracking-widest italic-off">{t('heroTitle')} • ABV {result.abv}%</div>
+                                            <div className="px-4 py-1 bg-black/40 backdrop-blur-md rounded-full text-xs font-black text-teal-300 uppercase tracking-widest italic-off">{t('heroTitle')} • ABV {result.abv}%</div>
                                         </div>
                                     </div>
                                     <div className="p-8 md:p-12 space-y-8">
                                         <div className="text-center space-y-4">
-                                            <h2 className="text-xs font-black text-amber-500 uppercase tracking-[0.3em] italic-off">{t('resultTitle')}</h2>
+                                            <h2 className="text-xs font-black text-teal-500 uppercase tracking-[0.3em] italic-off">{t('resultTitle')}</h2>
                                             <h3 className="text-4xl md:text-6xl font-serif font-black tracking-tight title-font italic-off">{result.name}</h3>
                                             <div className="flex flex-wrap justify-center gap-2 italic-off">{result.tags.map(tag => (<span key={tag} className="px-3 py-1 rounded-full text-[10px] font-bold border border-amber-500/30 text-amber-500">#{tag}</span>))}</div>
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 italic-off">
                                             <div className="p-6 rounded-3xl flex flex-col justify-between bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-inner">
-                                                <div className="space-y-2"><div className="flex items-center gap-2 text-amber-500"><Icon name="trending-up" size={20} /><h4 className="text-[10px] font-black uppercase tracking-wider title-font italic-off">{t('bioTotal')}</h4></div><p className="font-bold text-lg italic-off">{(biorhythm.b * 100).toFixed(1)}% ({getAbvRecommendation(biorhythm.b).range})</p></div>
+                                                <div className="space-y-2"><div className="flex items-center gap-2 text-teal-500"><Icon name="trending-up" size={20} /><h4 className="text-[10px] font-black uppercase tracking-wider title-font italic-off">{t('bioTotal')}</h4></div><p className="font-bold text-lg italic-off">{(biorhythm.b * 100).toFixed(1)}% ({getAbvRecommendation(biorhythm.b).range})</p></div>
                                                 <p className="text-[11px] opacity-60 mt-4 leading-relaxed font-medium italic-off">{getDrinkingAdvice(biorhythm.b, lang)}</p>
                                             </div>
                                             <div className="p-6 rounded-3xl flex flex-col justify-between bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-inner">
-                                                <div className="space-y-2"><div className="flex items-center gap-2 text-amber-500"><Icon name="wind" size={20} /><h4 className="text-[10px] font-black uppercase tracking-wider title-font italic-off">Archetype Score</h4></div><div className="flex items-end justify-between"><p className="font-bold text-lg italic-off">{result.score} pts</p><div className={`text-[10px] font-black uppercase ${getArchetypeStatus(result.score).color}`}>{getArchetypeStatus(result.score).label}</div></div>
-                                                <div className="space-y-1 pt-1"><div className="h-2 w-full bg-slate-200 dark:bg-slate-900 rounded-full overflow-hidden shadow-inner"><div className="h-full bg-gradient-to-r from-amber-600 to-amber-400 transition-all duration-1000" style={{ width: `${Math.min((result.score / 900) * 100, 100)}%` }} /></div><div className="flex justify-between text-[7px] font-black opacity-30 uppercase tracking-tighter italic-off"><span>Worst Match</span><span className="text-amber-500">Best Match ★</span></div></div></div>
+                                                <div className="space-y-2"><div className="flex items-center gap-2 text-teal-500"><Icon name="wind" size={20} /><h4 className="text-[10px] font-black uppercase tracking-wider title-font italic-off">Archetype Score</h4></div><div className="flex items-end justify-between"><p className="font-bold text-lg italic-off">{(result.score).toFixed(0)} pts</p><div className={`text-[10px] font-black uppercase ${getArchetypeStatus(result.score).color}`}>{getArchetypeStatus(result.score).label}</div></div>
+                                                <div className="space-y-1 pt-1"><div className="h-2 w-full bg-slate-200 dark:bg-slate-900 rounded-full overflow-hidden shadow-inner"><div className="h-full bg-gradient-to-r from-teal-600 to-teal-400 transition-all duration-1000" style={{ width: `${Math.min((result.score / 1100) * 100, 100)}%` }} /></div><div className="flex justify-between text-[7px] font-black opacity-30 uppercase tracking-tighter italic-off"><span>Worst Match</span><span className="text-teal-500">Best Match ★</span></div></div></div>
                                                 <div className="mt-4 flex items-start gap-2 italic-off"><Icon name="help-circle" size={14} className="shrink-0 text-amber-500/50 mt-0.5" /><p className="text-[11px] opacity-60 leading-relaxed font-medium italic-off">{t('archetypeExplanation')}</p></div>
                                             </div>
                                         </div>
-                                        <div className={`p-6 md:p-8 rounded-3xl border-2 ${result.mbtiMatch ? 'border-amber-500/30 bg-amber-500/5' : 'border-indigo-500/30 bg-indigo-500/5'} italic-off`}>
-                                            <div className="flex items-center gap-2 mb-4 italic-off">{result.mbtiMatch ? <Icon name="sparkles" className="text-amber-500" size={18} /> : <Icon name="coffee" className="text-indigo-400" size={18} />}<span className="font-black uppercase tracking-widest text-sm italic-off">{result.mbtiMatch ? (lang === 'ko' ? "심리적 기질 기반 정석적 추천" : "Personality Based Match") : (lang === 'ko' ? "정서적 파동 기반 변칙적 추천" : "Mood-Driven Wildcard")}</span></div>
+                                        <div className={`p-6 md:p-8 rounded-3xl border-2 ${result.mbtiMatch ? 'border-teal-500/30 bg-teal-500/5' : 'border-indigo-500/30 bg-indigo-500/5'} italic-off`}>
+                                            <div className="flex items-center gap-2 mb-4 italic-off">{result.mbtiMatch ? <Icon name="sparkles" className="text-teal-500" size={18} /> : <Icon name="coffee" className="text-indigo-400" size={18} />}<span className="font-black uppercase tracking-widest text-sm italic-off">{result.mbtiMatch ? (lang === 'ko' ? "심리적 기질 기반 정석적 추천" : "Personality Based Match") : (lang === 'ko' ? "정서적 파동 기반 변칙적 추천" : "Mood-Driven Wildcard")}</span></div>
                                             <p className="text-base md:text-lg font-medium opacity-70 leading-relaxed mb-6 italic-off">{result.mbtiMatch ? (lang === 'ko' ? `이 위스키의 풍미는 당신의 ${mbti}적 기질과 내면의 상(象)이 지향하는 본질적 안정감에 깊이 닿아 있습니다. 뇌의 보상 계통이 익숙하고 체계적인 자극에 반응하여 정서적 평온을 이끄는 신경전달 과정과 일치하며, 자아의 인지적 일관성을 유지하려는 무의식적 갈망을 충실히 채워주는 정교한 선택입니다.` : `Matches your nature. Aligns with stable neuro-rewards.`) : (lang === 'ko' ? `평소의 심리적 틀(${mbti})에서 벗어난 듯 보이나, 현재의 정서적 파동이 뇌의 편도체를 자극하여 새로운 감각적 보상을 갈구하고 있습니다. 일상의 신경 회로를 환기하고 낯선 자극을 통해 도파민적 활력을 깨우기에 더없이 좋은 조화입니다.` : `A delightful break from your usual profile, reawakening sensory dopamine.`)}</p>
-                                            <div className="pt-4 border-t border-slate-200 dark:border-white/10 flex items-start gap-3 italic-off"><Icon name="quote" className="text-amber-500 shrink-0 mt-1" size={20} /><p className="text-lg md:text-xl font-bold text-amber-500 leading-tight italic-off">{result.randomIntro[lang]} {result.randomSummary[lang]}</p></div>
+                                            <div className="pt-4 border-t border-slate-200 dark:border-white/10 flex items-start gap-3 italic-off"><Icon name="quote" className="text-teal-500 shrink-0 mt-1" size={20} /><p className="text-lg md:text-xl font-bold text-teal-500 leading-tight italic-off">{result.randomIntro[lang]} {result.randomSummary[lang]}</p></div>
                                         </div>
                                         <div className="flex flex-col md:flex-row gap-4 pt-4 italic-off">
-                                            <a href={`https://www.google.com/search?q=${encodeURIComponent(result.name)}+구매`} target="_blank" rel="noreferrer" className="flex-1 py-5 rounded-full bg-amber-500 text-slate-950 font-black text-lg flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform shadow-xl italic-off"><Icon name="search" size={20} /> {t('searchBuy')}</a>
+                                            <a href={`https://www.google.com/search?q=${encodeURIComponent(result.name)}+구매`} target="_blank" rel="noreferrer" className="flex-1 py-5 rounded-full bg-teal-500 text-slate-950 font-black text-lg flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform shadow-xl italic-off"><Icon name="search" size={20} /> {t('searchBuy')}</a>
                                             <button onClick={() => setResult(null)} className="flex-1 py-5 rounded-full font-black text-lg flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all italic-off"><Icon name="refresh-ccw" size={20} /> {t('retry')}</button>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="p-6 rounded-3xl bg-amber-500/5 border border-amber-500/10 flex items-start gap-4 italic-off"><Icon name="info" className="text-amber-500 shrink-0 mt-1" size={20} /><p className="text-xs opacity-60 leading-relaxed font-medium italic-off">{lang === 'ko' ? "본 추천은 개인의 기호와 바이오리듬 알고리즘에 기반한 제안입니다. 실제 취향은 개인마다 다를 수 있으며, 과도한 음주는 건강을 해칠 수 있으므로 항상 적당한 시음을 즐기시기 바랍니다." : "A suggestion based on individual preference and biorhythm algorithms. Individual taste may vary. Always enjoy responsibly as excessive drinking can be harmful."}</p></div>
+                                <div className="p-6 rounded-3xl bg-amber-500/5 border border-amber-500/10 flex items-start gap-4 italic-off"><Icon name="info" className="text-amber-500 shrink-0 mt-1" size={20} /><p className="text-xs opacity-60 leading-relaxed font-medium italic-off">{lang === 'ko' ? "본 추천은 개인의 기호와 바이오리듬 알고리즘에 기반한 제안입니다. 실제 취향은 개인마다 다를 수 있으며, 과도한 음주는 건강을 해칠 수 있으므로 항상 적당한 시음을 즐기시기 바랍니다." : "This recommendation is a suggestion based on individual preference and biorhythm algorithms. Individual taste may vary. Always enjoy responsibly as excessive drinking can be harmful."}</p></div>
                             </div>
                         )}
                     </main>
