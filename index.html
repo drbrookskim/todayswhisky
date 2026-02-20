@@ -1,1 +1,1257 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오늘의 위스키 - MBTI & 바이오리듬 큐레이션</title>
+    <!-- SEO & Open Graph -->
+    <meta name="description" content="MBTI와 오늘의 바이오리듬을 분석하여 당신에게 가장 완벽한 주류 한 잔을 추천합니다.">
+    <meta property="og:title" content="오늘의 위스키 (Today's Whiskey)">
+    <meta property="og:description" content="성격과 기분, 신체 리듬을 결합한 초개인화 주류 추천 서비스">
+    <meta property="og:type" content="website">
+    
+    <!-- Scripts & Styles -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind Config for Dark Mode -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Pretendard', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
 
+        /* Strict Non-Italic Enforcement */
+        em, i, .italic {
+            font-style: normal !important;
+        }
+
+        /* Custom Scrollbar for Teal Theme */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #0d9488; border-radius: 10px; }
+
+        .teal-gradient {
+            background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+        }
+
+        .amber-button {
+            background-color: #f59e0b;
+            color: white;
+            transition: all 0.2s;
+        }
+        .amber-button:hover {
+            background-color: #d97706;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+        }
+
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .dark .glass-morphism {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        /* High Contrast for better readability in Dark Mode */
+        .dark .text-contrast-high { color: #f8fafc; }
+        .dark .text-contrast-medium { color: #cbd5e1; }
+        .dark .text-contrast-low { color: #94a3b8; }
+
+        @keyframes progress {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+        .animate-progress {
+            animation: progress 3s ease-in-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo } = React;
+
+        // --- 1. Global Data Definitions ---
+        
+        const TEXT = {
+            ko: {
+                title: "오늘의 위스키",
+                step1_title: "당신의 MBTI는?",
+                step1_date: "날짜를 선택하세요.",
+                step_next: "다음 단계",
+                step_prev: "이전 단계",
+                step2_title: "오늘 기분은 어떤가요?",
+                step2_sub: "최대 3개 선택. 상충하는 감정은 자동 해제됩니다.",
+                step3_title: "예산은 어느 정도인가요?",
+                run_btn: "추천 엔진 가동",
+                random_btn: "난 그냥 아무거나 마실래요! 🎲",
+                result_bio: "오늘의 바이오리듬",
+                bio_rec: "분석 결과:",
+                bio_abv: "도수 추천",
+                match_label: "매칭 점수",
+                report_title: "행동경제학 및 신경생물학 분석 리포트",
+                reset_btn: "처음으로 돌아가기",
+                buy_btn: "구매처 알아보기",
+                price_label: "네이버 AI 시세 정보",
+                price_check: "용량별 가격 확인",
+                popup_title: "용량별 시세 및 리뷰",
+                popup_desc: "다양한 용량의 시세 범위와 생생한 리뷰를 확인하세요.",
+                search_youtube: "유튜브 리뷰 보기",
+                search_blog: "네이버 블로그 (실구매가)",
+                close_btn: "닫기",
+                currency_prefix: "약 ",
+                currency_suffix: "원"
+            },
+            en: {
+                title: "Today's Whiskey",
+                step1_title: "What is your MBTI?",
+                step1_date: "Select a date.",
+                step_next: "Next Step",
+                step_prev: "Previous Step",
+                step2_title: "How is your mood today?",
+                step2_sub: "Select up to 3. Conflicting moods auto-deselect.",
+                step3_title: "What is your budget?",
+                run_btn: "Run Curation Engine",
+                random_btn: "I'll just drink anything! 🎲",
+                result_bio: "Today's Biorhythm",
+                bio_rec: "Analysis:",
+                bio_abv: "ABV Rec.",
+                match_label: "Match Score",
+                report_title: "Behavioral Economics & Neurobiology Report",
+                reset_btn: "Start Over",
+                buy_btn: "Find Where to Buy",
+                price_label: "Market Price Range",
+                price_check: "Check Price by Size",
+                popup_title: "Price by Size & Reviews",
+                popup_desc: "Check price ranges for different bottle sizes and watch reviews.",
+                search_youtube: "Watch Reviews",
+                search_blog: "Search Web Reviews",
+                close_btn: "Close",
+                currency_prefix: "Approx. ",
+                currency_suffix: ""
+            }
+        };
+
+        const ANALYSIS_LOGIC = {
+            // MBTI 그룹 매핑
+            getMbtiGroup: (mbtiType) => {
+                const groups = {
+                    Analyst: ['INTJ', 'INTP', 'ENTJ', 'ENTP'],
+                    Diplomat: ['INFJ', 'INFP', 'ENFJ', 'ENFP'],
+                    Sentinel: ['ISTJ', 'ISFJ', 'ESTJ', 'ESFJ'],
+                    Explorer: ['ISTP', 'ISFP', 'ESTP', 'ESFP']
+                };
+                for (const [group, types] of Object.entries(groups)) {
+                    if (types.includes(mbtiType)) return group;
+                }
+                return 'Analyst';
+            },
+
+            // 분석 데이터: [인지적 판단 메커니즘] & [미래 행동 예측]
+            // Reference: Thinking, Fast and Slow (Kahneman), Behave (Sapolsky), Nudge (Thaler)
+            analysisData: {
+                Analyst: {
+                    judgment: {
+                        positive: {
+                            ko: "전전두피질(Prefrontal Cortex)이 활성화되어 있지만, 도파민 급증으로 '낙관주의 편향(Optimism Bias)'이 작동 중입니다. 대니얼 카너먼의 '시스템 2(이성)'가 통제하는 듯 보이지만, 실제로는 '시스템 1(직관)'이 내린 결론을 이성이 합리화하고 있을 가능성이 높습니다.",
+                            en: "Your Prefrontal Cortex is active, but Dopamine triggers 'Optimism Bias.' While Kahneman's 'System 2' (rational) seems in charge, 'System 1' (intuition) likely drove the conclusion, which reason is now rationalizing."
+                        },
+                        negative: {
+                            ko: "코르티솔 수치 증가로 '분석 마비(Analysis Paralysis)'에 빠질 위험이 있습니다. 정보를 과도하게 수집하려는 경향은 불확실성을 통제하려는 진화적 방어 기제입니다. 전망 이론(Prospect Theory)에 따르면, 현재 당신은 이득보다 '손실 회피'에 극도로 민감합니다.",
+                            en: "Elevated Cortisol risks 'Analysis Paralysis.' Obsessive data gathering is an evolutionary defense mechanism. According to Prospect Theory, you are currently hypersensitive to 'Loss Aversion' over potential gains."
+                        },
+                        neutral: {
+                            ko: "가장 균형 잡힌 '시스템 2' 가동 상태입니다. 메타인지(Metacognition) 능력이 최상이며, 주류의 복잡한 풍미를 단순한 감각이 아닌 객관적이고 구조적인 데이터로 처리하고 있습니다.",
+                            en: "Optimal 'System 2' state. Metacognition is peak, allowing you to process the spirit's complex flavors as objective data rather than just sensation."
+                        }
+                    },
+                    behavior: {
+                        positive: {
+                            ko: "알코올이 전두엽의 억제 기능을 이완시키면, 평소 억눌렀던 거대한 프로젝트나 투자를 대담하게 계획할 확률이 높습니다. 미래의 보상을 과대평가하는 경향이 있으므로, 오늘 밤의 결정은 메모만 해두고 실행은 내일로 미루는 '넛지(Nudge)'가 필요합니다.",
+                            en: "As alcohol relaxes frontal inhibition, you might boldly plan grand projects. You're overestimating future rewards; use a 'Nudge' to write down ideas tonight but execute them tomorrow."
+                        },
+                        negative: {
+                            ko: "외부와의 소통을 차단하고 내면의 동굴로 들어갈 것입니다. 혼자 잔을 기울이며 문제를 반추(Rumination)할 가능성이 큽니다. 추천된 한 잔은 신경계를 진정시켜 소모적인 사고의 고리를 끊어주는 역할을 할 것입니다.",
+                            en: "You likely retreat inward. Drinking alone while ruminating is probable. This drink acts as a nervous system sedative to break the cycle of exhaustive overthinking."
+                        },
+                        neutral: {
+                            ko: "지적 대화를 주도하거나 깊이 있는 독서/연구에 몰입할 것입니다. 음주가 긍정적이고 생산적인 에너지를 흐르게 하는 촉매가 됩니다.",
+                            en: "You will likely lead intellectual conversations or dive into reading. Alcohol acts as a catalyst for productive energy flow."
+                        }
+                    }
+                },
+                Diplomat: {
+                    judgment: {
+                        positive: {
+                            ko: "옥시토신 분비가 활발하여 '내집단 편향(In-group Bias)'이 긍정적으로 작용합니다. 현재의 분위기와 술에 얽힌 서사를 감정적으로 결합하여, 객관적 스펙이나 맛보다 '누구와 함께인가' 혹은 '어떤 의미인가'를 더 중요하게 판단합니다.",
+                            en: "Oxytocin boosts positive 'In-group Bias.' You judge value based on emotional context and narrative rather than objective taste, prioritizing 'who' and 'why' over 'what'."
+                        },
+                        negative: {
+                            ko: "거울 뉴런(Mirror Neuron)의 과활성으로 타인의 감정이나 세상의 부조리를 자신의 고통으로 느끼고 있습니다. 판단의 기준이 '사실'이 아닌 '가치'에 쏠려 있어 심리적 소진(Burnout)을 유발할 수 있는 인지 상태입니다.",
+                            en: "Hyperactive mirror neurons make you feel external pain as your own. Judgment is skewed towards 'values' over 'facts,' creating a cognitive state prone to burnout."
+                        },
+                        neutral: {
+                            ko: "직관과 통찰이 조화를 이룹니다. 현재의 평온함을 유지하기 위해 '현상 유지 편향(Status Quo Bias)'이 작동하며, 급격한 변화를 거부하고 일상의 소중함을 지키려는 판단을 내릴 것입니다.",
+                            en: "Intuition meets insight. 'Status Quo Bias' works to maintain tranquility, leading you to reject radical changes and protect the value of everyday life."
+                        }
+                    },
+                    behavior: {
+                        positive: {
+                            ko: "강화된 공감 능력으로 타인과의 깊은 대화를 이끌어내며, 주변 사람들에게 '심리적 안전지대'를 제공할 것입니다. 다만, 분위기에 취해 지키지 못할 약속을 섣불리 할 수도 있으니 주의가 필요합니다.",
+                            en: "Enhanced empathy fosters deep conversation, creating psychological safety for others. Beware of making promises you can't keep in the heat of the moment."
+                        },
+                        negative: {
+                            ko: "현실 도피적인 행동을 보일 수 있습니다. 판타지 소설, 영화, 혹은 과거의 좋았던 추억 속으로 숨어들 가능성이 높습니다. 향기로운 잔은 당신을 안전한 내면 세계로 안내하는 훌륭한 매개체가 됩니다.",
+                            en: "Escapist behavior is likely. You may retreat into fantasy or nostalgia. A fragrant glass serves as an excellent medium guiding you to a safe inner world."
+                        },
+                        neutral: {
+                            ko: "자신의 가치관을 재정립하는 시간을 갖습니다. 글을 쓰거나 명상을 하는 등 정적인 활동을 통해 스스로의 마음을 돌보는 방향으로 이어질 것입니다.",
+                            en: "You'll take time to realign values. Static activities like writing or meditation will help you care for your own mind."
+                        }
+                    }
+                },
+                Sentinel: {
+                    judgment: {
+                        positive: {
+                            ko: "세로토닌 수치가 안정적이며, '가용성 휴리스틱(Availability Heuristic)'에 의존하여 과거의 즐거웠던 기억을 바탕으로 현재를 긍정적으로 평가합니다. 모험보다는 검증된 클래식을 선택함으로써 인지적 부조화를 최소화하려는 판단을 내립니다.",
+                            en: "Stable serotonin relies on 'Availability Heuristic,' validating the present through past joy. You minimize cognitive dissonance by choosing proven classics over risky adventures."
+                        },
+                        negative: {
+                            ko: "예측 불가능한 상황에 대한 스트레스로 편도체(Amygdala)가 활성화되었습니다. 잃어버린 '통제 환상(Illusion of Control)'을 되찾기 위해 정리정돈을 하거나 규칙을 재확인하려는 강박적 판단이 두드러지며, 변화를 위협으로 간주합니다.",
+                            en: "Unpredictability triggers the amygdala. You may compulsively seek the 'Illusion of Control' through organizing or reaffirming rules. Change is perceived as a threat."
+                        },
+                        neutral: {
+                            ko: "가장 현실적이고 실용적인 상태입니다. 품질 대비 가격(가성비)과 역사적 검증을 냉철하게 계산하며, 감정에 크게 휘둘리지 않는 합리적 소비자의 전형을 보여주는 인지 상태입니다.",
+                            en: "Highly pragmatic and realistic. You calculate value-for-money and historical validation coldly, exemplifying the rational consumer unmoved by emotion."
+                        }
+                    },
+                    behavior: {
+                        positive: {
+                            ko: "자신의 일상과 루틴을 강화하는 행동을 합니다. 내일의 일정을 꼼꼼히 체크하거나, 술을 마신 후 뒷정리를 완벽하게 하는 등 일상의 '질서' 속에서 가장 큰 만족감을 느낄 것입니다.",
+                            en: "You reinforce daily routines. Checking tomorrow's schedules or cleaning up perfectly after a drink brings profound satisfaction through 'order'."
+                        },
+                        negative: {
+                            ko: "방어적 태도를 취하며 타인의 새로운 제안을 거절할 확률이 매우 높습니다. 익숙한 공간에서 익숙한 맛을 즐기며 코르티솔 수치를 낮추는 '자가 치유(Self-soothing)' 행동에 몰두할 것입니다.",
+                            en: "Defensive stance likely; rejecting new proposals is highly probable. You'll focus on 'Self-soothing' by enjoying familiar flavors in a safe space to lower cortisol."
+                        },
+                        neutral: {
+                            ko: "가족이나 자신이 속한 조직을 챙기는 이타적이고 책임감 있는 행동으로 이어질 수 있습니다. 자신의 사회적 역할과 책임을 확인하는 과정에서 내면의 안정을 찾습니다.",
+                            en: "May lead to responsible, altruistic acts for family or organizations. Stability is found in reaffirming your social roles and duties."
+                        }
+                    }
+                },
+                Explorer: {
+                    judgment: {
+                        positive: {
+                            ko: "도파민 수용체가 고도로 민감해져 있어 '새로움 추구(Novelty Seeking)' 성향이 폭발적으로 지배합니다. 카너먼의 '시스템 1(빠른 직관)'이 통제권을 쥐고 있으며, 즉각적인 감각적 쾌락과 모험을 최우선 가치로 판단합니다.",
+                            en: "Sensitized dopamine receptors drive explosive 'Novelty Seeking.' Kahneman's 'System 1' rules, prioritizing immediate sensory pleasure and adventure above all else."
+                        },
+                        negative: {
+                            ko: "지루함이나 구속감을 견디지 못해 노르에피네프린이 불규칙하게 분비됩니다. 현재 상황을 탈출해야 할 '위기'로 인지하며, 충동적이고 즉각적인 변화를 꾀하려는 인지적 편향이 매우 강하게 작용합니다.",
+                            en: "Intolerance for boredom triggers erratic norepinephrine. The present is perceived as a 'crisis' to escape, driving intensely impulsive cognitive bias for immediate change."
+                        },
+                        neutral: {
+                            ko: "감각 정보를 처리하는 뇌 영역이 매우 활발합니다. 술의 맛, 코끝을 찌르는 향, 목을 타고 넘어가는 타격감 등 물리적 자극 그 자체를 분석하며 온전히 '현재'에 몰입(Mindfulness)하고 있습니다.",
+                            en: "Sensory processing areas are highly active. You analyze physical stimuli—taste, aroma, the burn—achieving a deep state of 'Mindfulness' in the present moment."
+                        }
+                    },
+                    behavior: {
+                        positive: {
+                            ko: "즉흥적인 행동으로 이어질 확률이 큽니다. 술김에 갑자기 여행 비행기 표를 예매하거나, 새로운 취미 장비를 결제하는 등 평소라면 주저했을 대담한 시도를 감행할 가능성이 90% 이상입니다.",
+                            en: "Spontaneity ensues. There's a 90% chance you'll impulsively book a flight or buy new hobby gear, taking bold actions you'd normally hesitate on."
+                        },
+                        negative: {
+                            ko: "신체적 활동을 통해 스트레스를 발산하려 할 것입니다. 격렬한 운동, 몰입감 높은 게임, 혹은 볼륨을 크게 높인 음악 감상 등 '감각적 환기(Sensory Ventilation)'를 통해 뇌의 각성 수준을 재조정할 것입니다.",
+                            en: "Stress relief through physical action. You'll reset arousal levels via 'Sensory Ventilation' like vigorous exercise, intense gaming, or loud music."
+                        },
+                        neutral: {
+                            ko: "도구를 만지거나 무언가를 조립/수리하는 등 손을 쓰는 감각적 활동에 집중할 것입니다. 복잡한 생각 대신 감각에 집중하는 것이 당신에게 최고의 정신적 휴식을 줍니다.",
+                            en: "You'll focus on tactile tasks like fixing or building things. Focusing on the senses instead of complex thoughts provides you with the ultimate mental rest."
+                        }
+                    }
+                }
+            },
+
+            // 리포트 생성 메인 함수
+            generateReport: function(mbti, moods, lang) {
+                const group = this.getMbtiGroup(mbti);
+                
+                // 기분 상태 분류 (Positive / Negative / Neutral)
+                let moodState = 'neutral';
+                const moodId = moods && moods.length > 0 ? moods[0] : 'joy';
+
+                if (['joy', 'anticipation', 'surprise'].includes(moodId)) {
+                    moodState = 'positive';
+                } else if (['sadness', 'anger', 'fear', 'disgust'].includes(moodId)) {
+                    moodState = 'negative';
+                } else {
+                    moodState = 'neutral'; // trust
+                }
+
+                const data = this.analysisData[group];
+                
+                return {
+                    judgmentTitle: lang === 'ko' ? "인지적 판단 메커니즘 (Cognitive Judgment)" : "Cognitive Judgment Mechanism",
+                    judgmentDesc: data.judgment[moodState][lang],
+                    behaviorTitle: lang === 'ko' ? "미래 행동 예측 (Future Behavior Prediction)" : "Future Behavior Prediction",
+                    behaviorDesc: data.behavior[moodState][lang]
+                };
+            }
+        };
+
+        const PRICE_RANGES = [
+            { id: 1, label: { ko: "5만원 이하", en: "Under ₩50k" }, min: 0, max: 50000 },
+            { id: 2, label: { ko: "5만원 - 10만원", en: "₩50k - ₩100k" }, min: 50000, max: 100000 },
+            { id: 3, label: { ko: "10만원 - 20만원", en: "₩100k - ₩200k" }, min: 100000, max: 200000 },
+            { id: 4, label: { ko: "20만원 - 50만원", en: "₩200k - ₩500k" }, min: 200000, max: 500000 },
+            { id: 5, label: { ko: "50만원 - 100만원", en: "₩500k - ₩1m" }, min: 500000, max: 1000000 }
+        ];
+
+        const MBTI_GROUPS = [
+            { 
+                key: "Analyst", 
+                label: { ko: "분석가형 (Analyst)", en: "Analyst" }, 
+                color: "text-purple-600 dark:text-purple-400", 
+                types: ["INTJ", "INTP", "ENTJ", "ENTP"] 
+            },
+            { 
+                key: "Diplomat", 
+                label: { ko: "외교관형 (Diplomat)", en: "Diplomat" }, 
+                color: "text-green-600 dark:text-green-400", 
+                types: ["INFJ", "INFP", "ENFJ", "ENFP"] 
+            },
+            { 
+                key: "Sentinel", 
+                label: { ko: "관리자형 (Sentinel)", en: "Sentinel" }, 
+                color: "text-blue-600 dark:text-blue-400", 
+                types: ["ISTJ", "ISFJ", "ESTJ", "ESFJ"] 
+            },
+            { 
+                key: "Explorer", 
+                label: { ko: "탐험가형 (Explorer)", en: "Explorer" }, 
+                color: "text-amber-600 dark:text-amber-400", 
+                types: ["ISTP", "ISFP", "ESTP", "ESFP"] 
+            }
+        ];
+        
+        const MOODS = [
+            { 
+                id: 'joy', 
+                label: { ko: '기쁨', en: 'Joy' },
+                desc: { ko: "기쁜 날이에요. 축하주 한 잔?", en: "Happy day. Celebration drink?" },
+                emoji: "😁",
+                icon: 'smile', 
+                color: 'text-yellow-500', 
+                conflicts: ['sadness', 'anger'], 
+                flavorProfile: ['sweet', 'fruity', 'citrus', 'vanilla', 'clean'] 
+            },
+            { 
+                id: 'sadness', 
+                label: { ko: '슬픔', en: 'Sadness' },
+                desc: { ko: "마음 슬픈 날이에요. 위로주 한 잔?", en: "Feeling sad. Comfort drink?" },
+                emoji: "😢",
+                icon: 'frown', 
+                color: 'text-blue-500', 
+                conflicts: ['joy'], 
+                flavorProfile: ['mellow', 'balanced', 'rich', 'sherry', 'floral'] 
+            },
+            { 
+                id: 'anger', 
+                label: { ko: '분노', en: 'Anger' },
+                desc: { ko: "화가 많은 날이에요. 스트레스 풀기 위해 한 잔?", en: "Angry day? Stress relief drink?" },
+                emoji: "😡",
+                icon: 'flame', 
+                color: 'text-red-500', 
+                conflicts: ['joy', 'trust', 'calm'], 
+                flavorProfile: ['smoky', 'intense', 'peppery', 'cask_strength', 'bold'] 
+            },
+            { 
+                id: 'trust', 
+                label: { ko: '신뢰', en: 'Trust' },
+                desc: { ko: "마음이 편한 날이에요. 이런 날은 한 잔 해줘야∙∙∙?", en: "Relaxed day. A drink for today?" },
+                emoji: "😌",
+                icon: 'shield-check', 
+                color: 'text-emerald-500', 
+                conflicts: ['anger', 'fear'], 
+                flavorProfile: ['balanced', 'smooth', 'mellow', 'classic', 'oak'] 
+            },
+            { 
+                id: 'fear', 
+                label: { ko: '두려움', en: 'Fear' },
+                desc: { ko: "불안하고 걱정되는 날이에요. 살짝 잊기 위해서 한 잔?", en: "Anxious? A drink to forget?" },
+                emoji: "😨",
+                icon: 'ghost', 
+                color: 'text-purple-500', 
+                conflicts: ['trust', 'joy'], 
+                flavorProfile: ['intense', 'bold', 'spicy', 'complex'] 
+            },
+            { 
+                id: 'surprise', 
+                label: { ko: '놀람', en: 'Surprise' },
+                desc: { ko: "서프라이즈가 있었던 날이에요. 이런 날은 놀람을 달래기 위해서 한 잔?", en: "Surprised? Calming drink?" },
+                emoji: "😲",
+                icon: 'zap', 
+                color: 'text-cyan-500', 
+                conflicts: [], 
+                flavorProfile: ['citrus', 'seaweed', 'medicinal', 'unique', 'fresh'] 
+            },
+            { 
+                id: 'anticipation', 
+                label: { ko: '기대', en: 'Anticipation' },
+                desc: { ko: "설레는 일이 있는 날이에요. 기념으로 한 잔?", en: "Excited? Commemorative drink?" },
+                emoji: "🤩",
+                icon: 'compass', 
+                color: 'text-orange-500', 
+                conflicts: [], 
+                flavorProfile: ['floral', 'honey', 'orange', 'fresh', 'sweet'] 
+            },
+            { 
+                id: 'disgust', 
+                label: { ko: '거부감', en: 'Disgust' },
+                desc: { ko: "기분이 매우 언짢은 날이에요. 기분전환을 위해서 한 잔?", en: "Unpleasant day? Refreshing drink?" },
+                emoji: "😖",
+                icon: 'thumbs-down', 
+                color: 'text-green-700', 
+                conflicts: ['joy'], 
+                flavorProfile: ['smoky', 'bold', 'intense', 'herbal', 'clean'] 
+            }
+        ];
+
+        // Dynamic Tag Scoring based on MBTI traits
+        const MBTI_TRAIT_PREFS = {
+            E: ['smooth', 'balanced', 'classic', 'sweet', 'light', 'creamy', 'fresh', 'clean'],
+            I: ['complex', 'smoky', 'intense', 'rich', 'seaweed', 'medicinal', 'cask_strength', 'oak'],
+            S: ['vanilla', 'caramel', 'oak', 'honey', 'classic', 'value', 'standard', 'clean'],
+            N: ['spicy', 'fruity', 'floral', 'unique', 'sherry', 'orange', 'complex', 'citrus'],
+            T: ['bold', 'smoky', 'peppery', 'oak', 'intense', 'cask_strength', 'rich', 'maritime', 'salty'],
+            F: ['sweet', 'smooth', 'floral', 'honey', 'mellow', 'fruity', 'creamy', 'velvet', 'elegant'],
+            J: ['balanced', 'classic', 'rich', 'mellow', 'oak', 'chocolate', 'standard'],
+            P: ['spicy', 'bold', 'unique', 'fresh', 'value', 'cask_strength', 'citrus', 'clean']
+        };
+
+        // SPIRITS_DB: Includes Original Whiskeys + GQ Korea Recommended 15 Whiskeys + Vodkas + Cognacs
+        const SPIRITS_DB = [
+            // --- Under 50k ---
+            { name: "짐빔 화이트", nameEn: "Jim Beam White Label", age: "NAS", style: "Standard Bourbon", tags: ["sweet", "vanilla", "corn", "light"], abv: 40, archetype: ["ESFP", "ESTP"], priceKrw: 24000, priceRangeKrw: "24,000원 ~ 30,000원", priceUsd: 18, variants: [{vol: "700ml", price: 24000}, {vol: "1L", price: 35000}, {vol: "200ml", price: 9000}], desc: "전 세계 판매 1위 버번. 가볍고 달콤한 바닐라 향의 하이볼 치트키.", descEn: "World's No.1 Bourbon. Light and sweet vanilla notes perfect for highballs." },
+            { name: "에반 윌리엄스 블랙", nameEn: "Evan Williams Black", age: "NAS", style: "Bourbon", tags: ["sweet", "vanilla", "caramel", "value", "standard"], abv: 43, archetype: ["ESTJ", "ESTP", "ESFP"], priceKrw: 30000, priceRangeKrw: "30,000원대", priceUsd: 20, variants: [{vol: "750ml", price: 30000}], desc: "[GQ 추천] 4~5년 숙성으로 풍성하고 촘촘한 맛을 자랑하는 가성비 끝판왕 아메리칸 버번.", descEn: "Highly cost-effective bourbon aged 4-5 years with typical vanilla and caramel notes." },
+            { name: "에반 윌리엄스 BIB", nameEn: "Evan Williams Bottled-in-Bond", age: "4년+", style: "High Proof Bourbon", tags: ["bold", "caramel", "oak", "value"], abv: 50, archetype: ["ESTJ", "ENTJ"], priceKrw: 30000, priceRangeKrw: "30,000원 ~ 39,000원", priceUsd: 22, variants: [{vol: "750ml", price: 30000}, {vol: "1L", price: 42000}], desc: "50도의 강렬한 타격감과 진한 오크향. 가성비 최고의 고도수 버번.", descEn: "Bold 100 proof with deep oak notes. Best value high-proof bourbon." },
+            { name: "제임슨 스탠다드", nameEn: "Jameson Irish Whiskey", age: "NAS", style: "Irish Blend", tags: ["smooth", "light", "floral", "classic"], abv: 40, archetype: ["ESFJ", "ISFJ"], priceKrw: 27000, priceRangeKrw: "27,000원 ~ 35,000원", priceUsd: 25, variants: [{vol: "700ml", price: 27000}, {vol: "1L", price: 45000}, {vol: "200ml", price: 10000}], desc: "3번 증류하여 극도로 부드러운 목넘김. 호불호 없는 데일리 위스키.", descEn: "Triple distilled for ultimate smoothness. An approachable daily dram." },
+            { name: "조니워커 블랙라벨", nameEn: "Johnnie Walker Black Label", age: "12년", style: "Blended Scotch", tags: ["smoky", "balanced", "fruit", "classic"], abv: 40, archetype: ["ENTJ", "INTJ"], priceKrw: 39000, priceRangeKrw: "39,000원 ~ 48,000원", priceUsd: 30, variants: [{vol: "500ml", price: 32000}, {vol: "700ml", price: 39000}, {vol: "1L", price: 58000}], desc: "[GQ 추천] 스모키와 과일의 완벽한 균형. 하이볼, 니트 어디에나 어울리는 교과서적 위스키.", descEn: "Perfect balance of smoke and fruit. The textbook blended scotch." },
+            { name: "메이커스 마크", nameEn: "Maker's Mark", age: "NAS", style: "Wheated Bourbon", tags: ["sweet", "floral", "smooth", "vanilla"], abv: 45, archetype: ["ESFJ", "ISFP"], priceKrw: 39800, priceRangeKrw: "39,800원 ~ 49,000원", priceUsd: 28, variants: [{vol: "750ml", price: 39800}, {vol: "200ml", price: 17000}], desc: "붉은 밀랍의 상징. 호밀 대신 밀을 사용하여 부드럽고 달콤한 꽃향기.", descEn: "Iconic red wax. Uses wheat instead of rye for a soft, floral sweetness." },
+            { name: "몽키숄더", nameEn: "Monkey Shoulder", age: "NAS", style: "Blended Malt", tags: ["vanilla", "orange", "creamy", "fresh"], abv: 40, archetype: ["ESFP", "ENFP"], priceKrw: 42000, priceRangeKrw: "42,000원 ~ 52,000원", priceUsd: 32, variants: [{vol: "700ml", price: 42000}, {vol: "1L", price: 55000}], desc: "[GQ 추천] 몰트 100% 블렌딩. 부드럽고 향긋하여 매운 음식과도 훌륭한 조화를 이룹니다.", descEn: "100% Malt blend. Sweet and creamy with notes of vanilla and orange." },
+            { name: "와일드터키 101 8년", nameEn: "Wild Turkey 101 8 Year", age: "8년", style: "High Rye Bourbon", tags: ["spicy", "vanilla", "oak", "bold"], abv: 50.5, archetype: ["ESTP", "ENTP"], priceKrw: 42000, priceRangeKrw: "42,000원 ~ 50,000원", priceUsd: 25, variants: [{vol: "700ml", price: 42000}, {vol: "1L", price: 49800}], desc: "[GQ 추천] 101 프루프(50.5도)의 화끈한 펀치. 거친 알코올 향을 멋지게 잡아주는 묵직한 버번.", descEn: "101 Proof kick with 8 years of aging. The definitive bold bourbon." },
+            { name: "옐로우로즈 프리미엄 아메리칸", nameEn: "Yellow Rose Premium American", age: "NAS", style: "American Whiskey", tags: ["sweet", "vanilla", "smooth", "light"], abv: 40, archetype: ["ESFJ", "ENFP"], priceKrw: 55000, priceRangeKrw: "50,000원대", priceUsd: 40, variants: [{vol: "700ml", price: 55000}], desc: "[GQ 추천] 부드러운 바닐라와 말린 바나나칩의 달콤함. 초보자도 거부감 없이 즐기는 맛.", descEn: "Approachable for beginners. Characterized by vanilla and dried banana chip sweetness." },
+            { name: "탐나불린 셰리캐스크", nameEn: "Tamnavulin Sherry Cask", age: "NAS", style: "Speyside Single Malt", tags: ["sweet", "sherry", "smooth", "vanilla"], abv: 40, archetype: ["ISFJ", "ESFJ", "ISFP"], priceKrw: 50000, priceRangeKrw: "50,000원대", priceUsd: 35, variants: [{vol: "700ml", price: 50000}], desc: "[GQ 추천] 위린이들을 위한 셰리 입문용. 팬케이크, 오렌지의 달콤하고 따뜻한 향이 특징.", descEn: "A sherry whisky for beginners. Sweet and smooth with hints of orange and pancake." },
+            { name: "앱솔루트 보드카", nameEn: "Absolut Vodka", age: "NAS", style: "Vodka", tags: ["clean", "standard", "value", "bold"], abv: 40, archetype: ["ESTP", "ESFP", "ISTP"], priceKrw: 30000, priceRangeKrw: "30,000원대", priceUsd: 20, variants: [{vol: "750ml", price: 30000}], desc: "스웨덴의 아이콘. 극도로 깔끔하여 어떤 믹서와도 완벽하게 어울리는 정직한 보드카.", descEn: "The Swedish icon. A clean, honest vodka that mixes well with anything." },
+
+            // --- 50k - 100k ---
+            { name: "와일드터키 레어브리드", nameEn: "Wild Turkey Rare Breed", age: "NAS", style: "Barrel Proof Bourbon", tags: ["spicy", "caramel", "bold", "cask_strength"], abv: 58.4, archetype: ["ENTJ", "ESTJ"], priceKrw: 80000, priceRangeKrw: "80,000원 ~ 95,000원", priceUsd: 50, variants: [{vol: "750ml", price: 80000}], desc: "물 타지 않은 야수의 심장. 58.4도의 강렬하고 진득한 카라멜 폭탄.", descEn: "Undiluted intensity. A 58.4% caramel bomb with a beastly heart." },
+            { name: "탈리스커 10년", nameEn: "Talisker 10 Year", age: "10년", style: "Island Single Malt", tags: ["smoky", "peppery", "maritime", "salty"], abv: 45.8, archetype: ["ISTP", "ENTP"], priceKrw: 69000, priceRangeKrw: "69,000원 ~ 82,000원", priceUsd: 60, variants: [{vol: "700ml", price: 69000}, {vol: "200ml", price: 28000}], desc: "[GQ 추천] 거친 바다 앞에서 빚어진 피트 위스키의 교과서. 굴이나 해산물과 훌륭한 페어링.", descEn: "Sea salt and peppery spice. Truly 'Made by the Sea'." },
+            { name: "글렌모렌지 오리지널", nameEn: "Glenmorangie The Original", age: "10년", style: "Highland Single Malt", tags: ["citrus", "floral", "vanilla", "elegant"], abv: 40, archetype: ["ENFP", "INFP"], priceKrw: 65000, priceRangeKrw: "65,000원 ~ 79,000원", priceUsd: 40, variants: [{vol: "700ml", price: 65000}], desc: "스코틀랜드에서 가장 목이 긴 증류기에서 탄생한 섬세하고 우아한 맛.", descEn: "Delicate and elegant, born from Scotland's tallest stills." },
+            { name: "싱글톤 더프타운 12년", nameEn: "Singleton Dufftown 12YO", age: "12년", style: "Speyside Single Malt", tags: ["smooth", "fresh", "light", "mellow"], abv: 40, archetype: ["ISFP", "INFP", "ENFJ"], priceKrw: 70000, priceRangeKrw: "60,000원 ~ 70,000원", priceUsd: 50, variants: [{vol: "700ml", price: 70000}], desc: "[GQ 추천] 청사과 향의 부드러운 풍미. 아찔한 자극보다는 평안한 일상에 잘 어울리는 한 잔.", descEn: "Perfect for a peaceful day. A comfortable daily dram carrying smooth green apple flavors." },
+            { name: "네이키드 몰트", nameEn: "Naked Malt", age: "NAS", style: "Blended Malt", tags: ["sweet", "fruity", "sherry", "rich"], abv: 40, archetype: ["ESFP", "ESTP"], priceKrw: 60000, priceRangeKrw: "60,000원대", priceUsd: 45, variants: [{vol: "700ml", price: 60000}], desc: "[GQ 추천] 맥캘란 등 유명 싱글몰트를 블렌딩해 셰리 캐스크에 추가 숙성. 건포도 풍미가 일품.", descEn: "Extra matured in sherry casks. Raisin and dried fruit flavors make it great for BBQs." },
+            { name: "주라 프렌치오크", nameEn: "Jura French Oak", age: "NAS", style: "Island Single Malt", tags: ["floral", "fruity", "smooth", "vanilla"], abv: 40, archetype: ["INFP", "INFJ"], priceKrw: 90000, priceRangeKrw: "90,000원대", priceUsd: 65, variants: [{vol: "700ml", price: 90000}], desc: "[GQ 추천] 내 공간을 따뜻하게 꾸며주는 술. 부드러운 과일향과 바닐라 라떼 같은 향미.", descEn: "Soft fruit and floral notes. Hints of vanilla and caramel latte fill the room warmly." },
+            { name: "글렌그란트 아보랄리스", nameEn: "GlenGrant Arboralis", age: "NAS", style: "Speyside Single Malt", tags: ["fresh", "floral", "light", "citrus"], abv: 40, archetype: ["INTP", "ISTJ"], priceKrw: 60000, priceRangeKrw: "60,000원대", priceUsd: 45, variants: [{vol: "700ml", price: 60000}], desc: "[GQ 추천] 계곡물처럼 맑고 화사한 풍미. 시원한 하이볼로 들이켜면 하루의 피로가 씻겨나갑니다.", descEn: "Clear and bright like valley water. A highball of this washes away the day's fatigue." },
+            { name: "더 글렌리벳 12년", nameEn: "The Glenlivet 12 Years Old", age: "12년", style: "Speyside Single Malt", tags: ["fruity", "fresh", "smooth", "balanced"], abv: 40, archetype: ["ENFJ", "ESFJ"], priceKrw: 90000, priceRangeKrw: "80,000원 ~ 90,000원", priceUsd: 65, variants: [{vol: "700ml", price: 90000}], desc: "[GQ 추천] 휴양지로 떠나고 싶은 싱그러움. 잘 익은 파인애플과 사과의 부드럽고 달콤한 풍미.", descEn: "Fresh ripe pineapple and apple notes. It brings the urge to escape to a resort." },
+            { name: "부나하벤 12년", nameEn: "Bunnahabhain 12 Year", age: "12년", style: "Unpeated Islay", tags: ["nutty", "sherry", "rich", "seaweed"], abv: 46.3, archetype: ["INFJ", "ISTJ"], priceKrw: 89000, priceRangeKrw: "89,000원 ~ 110,000원", priceUsd: 65, variants: [{vol: "700ml", price: 89000}], desc: "피트 없는 아일라. 셰리와 바다 내음의 독특하고 풍성한 조화.", descEn: "Unpeated Islay. A unique, rich blend of sherry and sea air." },
+            { name: "그레이 구스", nameEn: "Grey Goose", age: "NAS", style: "Vodka", tags: ["smooth", "clean", "classic", "elegant"], abv: 40, archetype: ["ENTJ", "ESTJ", "ISFJ"], priceKrw: 60000, priceRangeKrw: "60,000원대", priceUsd: 45, variants: [{vol: "750ml", price: 60000}], desc: "프랑스 프리미엄 보드카. 극도로 섬세하고 부드러운 질감으로 어떤 기분에도 완벽히 스며듭니다.", descEn: "Premium French vodka. Extremely clean and smooth texture makes it a perfect base." },
+            { name: "벨베데레", nameEn: "Belvedere", age: "NAS", style: "Vodka", tags: ["smooth", "vanilla", "rich", "elegant"], abv: 40, archetype: ["INTJ", "INFJ"], priceKrw: 70000, priceRangeKrw: "70,000원대", priceUsd: 55, variants: [{vol: "700ml", price: 70000}], desc: "폴란드 럭셔리 보드카. 호밀에서 오는 은은한 바닐라 향과 크리미한 질감이 일품입니다.", descEn: "Polish luxury vodka. Features subtle vanilla notes and a creamy texture." },
+
+            // --- 100k - 200k ---
+            { name: "라가불린 16년", nameEn: "Lagavulin 16 Year", age: "16년", style: "Peated Islay", tags: ["smoky", "seaweed", "intense", "rich"], abv: 43, archetype: ["INTJ", "INFJ"], priceKrw: 135000, priceRangeKrw: "135,000원 ~ 160,000원", priceUsd: 100, variants: [{vol: "700ml", price: 135000}], desc: "아일라의 제왕. 강렬한 피트와 셰리의 조화가 주는 중후한 매력.", descEn: "The King of Islay. A profound harmony of intense peat and sherry." },
+            { name: "맥캘란 12년 셰리오크", nameEn: "Macallan 12Y Sherry Oak", age: "12년", style: "Sherry Oak", tags: ["fruity", "spiced", "sweet", "rich"], abv: 40, archetype: ["ISFJ", "ESFJ"], priceKrw: 130000, priceRangeKrw: "130,000원 ~ 155,000원", priceUsd: 95, variants: [{vol: "700ml", price: 130000}], desc: "셰리 위스키의 기준. 말린 과일과 향신료의 고급스러운 풍미.", descEn: "The benchmark of sherry whisky. Luxurious dried fruit and spice notes." },
+            { name: "글렌피딕 15년", nameEn: "Glenfiddich 15 Year", age: "15년", style: "Solera Reserve", tags: ["honey", "vanilla", "balanced", "sweet"], abv: 40, archetype: ["ENFJ", "INFP"], priceKrw: 115000, priceRangeKrw: "110,000원 ~ 125,000원", priceUsd: 70, variants: [{vol: "700ml", price: 115000}, {vol: "500ml", price: 85000}], desc: "[GQ 추천] 첫 맛은 강렬하지만 구수하고 그리운 여운을 남깁니다. 꿀처럼 달콤한 밸런스.", descEn: "Intense start but leaves a nostalgic, honey-sweet smooth balance." },
+            { name: "발베니 12년 더블우드", nameEn: "Balvenie 12Y DoubleWood", age: "12년", style: "Balanced Malt", tags: ["honey", "nutty", "mellow", "smooth"], abv: 40, archetype: ["ISFP", "INTP"], priceKrw: 115000, priceRangeKrw: "115,000원 ~ 135,000원", priceUsd: 75, variants: [{vol: "700ml", price: 115000}], desc: "두 가지 오크통 숙성으로 완성된 꿀과 견과류의 정석적인 맛.", descEn: "Honey and nuts perfected by maturation in two types of oak." },
+            { name: "아드벡 10년", nameEn: "Ardbeg 10Y", age: "10년", style: "Peated Islay", tags: ["smoky", "medicinal", "citrus", "intense"], abv: 46, archetype: ["ENTP", "INTP"], priceKrw: 105000, priceRangeKrw: "100,000원대 초반", priceUsd: 70, variants: [{vol: "700ml", price: 105000}], desc: "[GQ 추천] 그어떤 위스키보다 강렬한 요오드와 피트 향. 레몬을 뿌린 아드벡 하이볼은 매력적입니다.", descEn: "Intense peat and iodine. An Ardbeg highball with lemon is exceptionally charming." },
+            { name: "아드벡 코리브레칸", nameEn: "Ardbeg Corryvreckan", age: "NAS", style: "High Vol Peat", tags: ["smoky", "medicinal", "citrus", "intense", "cask_strength"], abv: 57.1, archetype: ["INTJ", "ISTJ"], priceKrw: 165000, priceRangeKrw: "165,000원 ~ 190,000원", priceUsd: 120, variants: [{vol: "700ml", price: 165000}], desc: "소용돌이치는 강렬한 피트와 스파이스. 피트 마니아의 도전 과제.", descEn: "Swirling intense peat and spice. A challenge for peat lovers." },
+            { name: "달모어 포트우드", nameEn: "Dalmore Port Wood", age: "NAS", style: "Highland Single Malt", tags: ["smooth", "chocolate", "fruity", "elegant", "mellow"], abv: 46.5, archetype: ["INFJ", "ENFJ", "ISFJ"], priceKrw: 150000, priceRangeKrw: "150,000원대", priceUsd: 110, variants: [{vol: "700ml", price: 150000}], desc: "[GQ 추천] 반전 스토리. 보리의 고소함, 초콜릿 커피, 붉은 베리의 향기가 텐션을 부드럽게 풀어줍니다.", descEn: "A twist of smoothness. Roasted barley, chocolate coffee, and red berry notes melt away tension." },
+            { name: "헤네시 VSOP", nameEn: "Hennessy V.S.O.P", age: "VSOP", style: "Cognac", tags: ["rich", "fruity", "oak", "smooth", "classic"], abv: 40, archetype: ["ENTJ", "ENFJ", "ESTJ"], priceKrw: 120000, priceRangeKrw: "120,000원대", priceUsd: 85, variants: [{vol: "700ml", price: 120000}], desc: "포도 증류주의 정점. 전 세계에서 가장 사랑받는 꼬냑으로 풍성한 과일향과 오크향이 매력적입니다.", descEn: "The most loved Cognac worldwide. A masterpiece of harmonious fruit and oak notes." },
+            { name: "레미 마틴 VSOP", nameEn: "Rémy Martin V.S.O.P", age: "VSOP", style: "Cognac", tags: ["floral", "fruity", "elegant", "smooth"], abv: 40, archetype: ["INFJ", "ISFJ", "ISFP"], priceKrw: 110000, priceRangeKrw: "110,000원대", priceUsd: 80, variants: [{vol: "700ml", price: 110000}], desc: "섬세한 꼬냑의 척도. 은은한 꽃향기와 잘 익은 과일의 풍미가 우아하고 길게 남습니다.", descEn: "Delicate floral and ripe fruit flavors. Leaves a long, smooth, and elegant finish." },
+
+            // --- 200k+ ---
+            { name: "조니워커 블루라벨", nameEn: "Johnnie Walker Blue Label", age: "NAS", style: "Premium Blend", tags: ["balanced", "smoke", "velvet", "rich"], abv: 40, archetype: ["ENTJ", "ENFJ"], priceKrw: 240000, priceRangeKrw: "240,000원 ~ 310,000원", priceUsd: 200, variants: [{vol: "500ml", price: 160000}, {vol: "750ml", price: 240000}, {vol: "1L", price: 310000}], desc: "1만 개 중 하나의 오크통. 비단결 같은 목넘김의 블렌디드 끝판왕.", descEn: "One in ten thousand casks. The velvety pinnacle of blended whisky." },
+            { name: "글렌드로낙 18년", nameEn: "Glendronach 18 Year", age: "18년", style: "Sherry Bomb", tags: ["rich", "chocolate", "fruity", "complex"], abv: 46, archetype: ["INFJ", "INTJ"], priceKrw: 310000, priceRangeKrw: "310,000원 ~ 380,000원", priceUsd: 230, variants: [{vol: "700ml", price: 310000}], desc: "꾸덕한 셰리 폭탄. 다크 초콜릿과 건과일의 진한 여운.", descEn: "A thick sherry bomb. Deep finish of dark chocolate and dried fruit." },
+            { name: "야마자키 12년", nameEn: "Yamazaki 12 Year", age: "12년", style: "Japanese Single Malt", tags: ["floral", "fruit", "spice", "mizunara"], abv: 43, archetype: ["ISFJ", "ISTJ"], priceKrw: 290000, priceRangeKrw: "290,000원 ~ 450,000원", priceUsd: 180, variants: [{vol: "700ml", price: 290000}], desc: "일본 위스키의 전설. 미즈나라 오크의 신비로운 향나무 풍미.", descEn: "Japanese legend. Mysterious incense notes from Mizunara oak." },
+            { name: "로얄살루트 21년", nameEn: "Royal Salute 21 Year", age: "21년", style: "Royal Blend", tags: ["smooth", "sweet", "floral", "classic"], abv: 40, archetype: ["ESTJ", "ESFJ"], priceKrw: 200000, priceRangeKrw: "200,000원 ~ 260,000원", priceUsd: 160, variants: [{vol: "500ml", price: 140000}, {vol: "700ml", price: 210000}], desc: "여왕을 위한 술. 도자기 병에 담긴 부드러움의 극치.", descEn: "Fit for a Queen. Ultimate smoothness in a porcelain flagon." },
+            { name: "발렌타인 30년", nameEn: "Ballantine's 30 Year", age: "30년", style: "Ultra Premium Blend", tags: ["complex", "honey", "vanilla", "elegant"], abv: 40, archetype: ["ENTJ", "ESTJ"], priceKrw: 480000, priceRangeKrw: "480,000원 ~ 600,000원", priceUsd: 380, variants: [{vol: "700ml", price: 480000}], desc: "시간이 빚어낸 예술. 완벽에 가까운 밸런스와 끝없는 여운.", descEn: "Art crafted by time. Near-perfect balance and endless finish." },
+            { name: "맥캘란 18년 셰리오크", nameEn: "Macallan 18Y Sherry Oak", age: "18년", style: "Luxury Single Malt", tags: ["rich", "spicy", "orange", "iconic"], abv: 43, archetype: ["ESTP", "ESFP"], priceKrw: 520000, priceRangeKrw: "520,000원 ~ 650,000원", priceUsd: 420, variants: [{vol: "700ml", price: 520000}], desc: "싱글몰트의 롤스로이스. 압도적인 셰리 풍미와 럭셔리함.", descEn: "The Rolls-Royce of malts. Overwhelming sherry flavor and luxury." },
+            { name: "히비키 21년", nameEn: "Hibiki 21 Year", age: "21년", style: "Japanese Blend", tags: ["harmony", "fruit", "sandalwood", "complex"], abv: 43, archetype: ["INFJ", "ISFP"], priceKrw: 850000, priceRangeKrw: "850,000원 ~ 1,200,000원", priceUsd: 750, variants: [{vol: "700ml", price: 850000}], desc: "일본의 사계절을 담은 조화. 샌달우드와 오크의 깊은 울림.", descEn: "Harmony of Japan's seasons. Deep resonance of sandalwood and oak." }
+        ];
+
+        // --- 2. Helper Components ---
+        
+        const Icon = ({ name, className = "" }) => {
+            const iconRef = useRef(null);
+            useEffect(() => {
+                if (window.lucide && iconRef.current) {
+                    window.lucide.createIcons({
+                        attrs: { class: className },
+                        name: name,
+                        parentElement: iconRef.current
+                    });
+                }
+            }, [name, className]);
+            return <span ref={iconRef} className="inline-block" />;
+        };
+
+        const LoadingScreen = ({ lang }) => {
+            const [msgIndex, setMsgIndex] = useState(0);
+            const messages = {
+                ko: ["MBTI 성향 분석 중...", "바이오리듬 데이터 연산 중...", "행동경제학 메커니즘 분석 중...", "인지적 판단 편향 확인 중...", "당신을 위한 완벽한 한 잔 준비 중..."],
+                en: ["Analyzing MBTI Archetype...", "Calculating Biorhythm Data...", "Analyzing Behavioral Economics...", "Checking Cognitive Bias...", "Pouring Your Perfect Drink..."]
+            };
+
+            useEffect(() => {
+                const interval = setInterval(() => {
+                    setMsgIndex(prev => (prev + 1) % messages[lang].length);
+                }, 600); 
+                return () => clearInterval(interval);
+            }, [lang]);
+
+            return (
+                <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center animate-in fade-in">
+                    <div className="relative mb-10">
+                        <div className="absolute inset-0 bg-teal-500 rounded-full blur-xl opacity-20 animate-pulse"></div>
+                        <div className="relative p-6 bg-white dark:bg-slate-800 rounded-full shadow-2xl border border-teal-100 dark:border-slate-700">
+                            <Icon name="loader-2" className="w-12 h-12 text-teal-600 dark:text-teal-400 animate-spin" />
+                        </div>
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2 min-h-[28px]">
+                        {messages[lang][msgIndex]}
+                    </h3>
+                    <div className="w-64 h-2 bg-slate-200 dark:bg-slate-700 rounded-full mt-4 overflow-hidden">
+                        <div className="h-full bg-teal-600 animate-progress rounded-full"></div>
+                    </div>
+                </div>
+            );
+        };
+
+        const BioIndicator = ({ label, value, icon }) => {
+            const isWorst = value < 30;
+            const isBest = value > 70;
+            const colorClass = isWorst ? 'text-red-500' : (isBest ? 'text-blue-500' : 'text-teal-600');
+            
+            return (
+                <div className="flex flex-col items-center p-4 glass-morphism rounded-2xl shadow-sm">
+                    <Icon name={icon} className={`mb-2 ${colorClass}`} />
+                    <span className="text-xs text-slate-500 dark:text-slate-400 mb-1">{label}</span>
+                    <span className={`text-xl font-bold ${colorClass}`}>{value}%</span>
+                </div>
+            );
+        };
+
+        // --- 3. Modals ---
+
+        const PriceCheckModal = ({ isOpen, onClose, result, lang }) => {
+            if (!isOpen || !result) return null;
+
+            const t = TEXT[lang];
+            const whiskeyName = lang === 'ko' ? result.whiskey.name : result.whiskey.nameEn;
+            const whiskeyAge = result.whiskey.age;
+            const variants = result.whiskey.variants || [];
+            const priceRange = result.whiskey.priceRangeKrw;
+
+            const formattedPrice = lang === 'ko' 
+                ? priceRange || `${result.whiskey.priceKrw.toLocaleString()}원` 
+                : `$${result.whiskey.priceUsd} USD`;
+
+            const handleSearch = (platform) => {
+                let url = "";
+                const queryPrice = encodeURIComponent(whiskeyName + (lang === 'ko' ? " 가격" : " price"));
+                const queryReview = encodeURIComponent(whiskeyName + (lang === 'ko' ? " 리뷰" : " review"));
+                
+                if (platform === 'youtube') {
+                    url = `https://www.youtube.com/results?search_query=${queryReview}`;
+                } else if (platform === 'blog') {
+                    if (lang === 'ko') {
+                         url = `https://search.naver.com/search.naver?where=blog&query=${queryPrice}`;
+                    } else {
+                         url = `https://www.google.com/search?q=${queryReview}`;
+                    }
+                }
+                window.open(url, '_blank');
+            };
+
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+                    <div className="w-full max-w-sm bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800">
+                        <div className="p-6 text-center">
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{t.popup_title}</h3>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">{t.popup_desc}</p>
+                            
+                            <div className="mb-6 bg-teal-50 dark:bg-teal-900/30 rounded-xl overflow-hidden">
+                                <div className="p-3 bg-teal-100 dark:bg-teal-900/50">
+                                    <span className="block text-xs font-bold text-teal-700 dark:text-teal-300">{t.price_label}</span>
+                                </div>
+                                <div className="p-2 space-y-1">
+                                    {variants.map((v, i) => (
+                                        <div key={i} className="flex justify-between items-center px-4 py-2 hover:bg-white/50 dark:hover:bg-black/20 rounded-lg border-b border-dashed border-slate-200 dark:border-slate-700 last:border-0">
+                                            <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                                                {whiskeyAge !== 'NAS' ? whiskeyAge : ''} {v.vol}
+                                            </span>
+                                            <span className="text-lg font-black text-slate-900 dark:text-white">
+                                                {lang === 'ko' 
+                                                    ? `${v.price.toLocaleString()}원` 
+                                                    : `$${Math.round(v.price / 1350)}`
+                                                }
+                                            </span>
+                                        </div>
+                                    ))}
+                                    {variants.length === 0 && (
+                                        <div className="py-4 text-slate-500">
+                                            {formattedPrice} (700ml)
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                <button onClick={() => handleSearch('youtube')} className="w-full py-4 px-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors shadow-sm">
+                                    <Icon name="youtube" className="w-5 h-5" />
+                                    {t.search_youtube}
+                                </button>
+                                <button onClick={() => handleSearch('blog')} className={`w-full py-4 px-4 ${lang === 'ko' ? 'bg-[#03C75A] hover:bg-[#02b351]' : 'bg-blue-600 hover:bg-blue-700'} text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors shadow-sm`}>
+                                    <Icon name={lang === 'ko' ? 'book-open' : 'search'} className="w-5 h-5" />
+                                    {t.search_blog}
+                                </button>
+                            </div>
+                        </div>
+                        <div className="p-4 border-t border-slate-100 dark:border-slate-800">
+                            <button onClick={onClose} className="w-full py-3 text-slate-500 dark:text-slate-400 font-bold text-sm hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
+                                {t.close_btn}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const CalendarModal = ({ isOpen, onClose, onSelect, selectedDate, lang }) => {
+            if (!isOpen) return null;
+            
+            const [currentYear, setCurrentYear] = useState(selectedDate.getFullYear());
+            const [currentMonth, setCurrentMonth] = useState(selectedDate.getMonth());
+
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+            const weekDays = lang === 'ko' 
+                ? ['일','월','화','수','목','금','토'] 
+                : ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+            
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className="w-full max-w-sm overflow-hidden bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800">
+                        <div className="p-4 teal-gradient text-white flex justify-between items-center">
+                            <button onClick={() => setCurrentMonth(m => m === 0 ? 11 : m - 1)}><Icon name="chevron-left" /></button>
+                            <h3 className="text-lg font-bold">
+                                {currentYear}{lang === 'ko' ? '년' : '.'} {currentMonth + 1}{lang === 'ko' ? '월' : ''}
+                            </h3>
+                            <button onClick={() => setCurrentMonth(m => m === 11 ? 0 : m + 1)}><Icon name="chevron-right" /></button>
+                        </div>
+                        <div className="p-4">
+                            <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-slate-400 mb-2">
+                                {weekDays.map(d => <div key={d}>{d}</div>)}
+                            </div>
+                            <div className="grid grid-cols-7 gap-1">
+                                {Array(firstDay).fill(null).map((_, i) => <div key={`empty-${i}`} />)}
+                                {days.map(d => {
+                                    const isToday = selectedDate.getDate() === d && selectedDate.getMonth() === currentMonth && selectedDate.getFullYear() === currentYear;
+                                    return (
+                                        <button 
+                                            key={d}
+                                            onClick={() => {
+                                                onSelect(new Date(currentYear, currentMonth, d));
+                                                onClose();
+                                            }}
+                                            className={`h-10 rounded-lg flex items-center justify-center text-sm transition-colors ${isToday ? 'bg-teal-600 text-white font-bold' : 'hover:bg-teal-100 dark:hover:bg-teal-900/30 text-slate-700 dark:text-slate-300'}`}
+                                        >
+                                            {d}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            <button onClick={onClose} className="w-full mt-4 py-2 text-sm font-medium text-teal-600 dark:text-teal-400 border border-teal-600/20 rounded-xl hover:bg-teal-50 dark:hover:bg-teal-900/20">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- 4. Main App Component ---
+
+        const App = () => {
+            const [lang, setLang] = useState('ko'); 
+            const [step, setStep] = useState(1);
+            const [mbti, setMbti] = useState('INTJ');
+            const [selectedMoods, setSelectedMoods] = useState([]);
+            // Initialize with ID 1 (Under 50k)
+            const [selectedPriceRange, setSelectedPriceRange] = useState(1); 
+            const [baseDate, setBaseDate] = useState(new Date());
+            const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+            const [isLoading, setIsLoading] = useState(false);
+            const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
+            
+            const [isDarkMode, setIsDarkMode] = useState(() => {
+                if (typeof window !== 'undefined') {
+                    const savedTheme = localStorage.getItem('whiskey_theme');
+                    if (savedTheme) {
+                        return savedTheme === 'dark';
+                    }
+                    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+                }
+                return false;
+            });
+            const [result, setResult] = useState(null);
+
+            useEffect(() => {
+                const root = document.documentElement;
+                if (isDarkMode) {
+                    root.classList.add('dark');
+                    localStorage.setItem('whiskey_theme', 'dark');
+                } else {
+                    root.classList.remove('dark');
+                    localStorage.setItem('whiskey_theme', 'light');
+                }
+            }, [isDarkMode]);
+
+            const t = TEXT[lang];
+
+            const handleMoodClick = (moodId) => {
+                const moodObj = MOODS.find(m => m.id === moodId);
+                let newList = [...selectedMoods];
+
+                if (newList.includes(moodId)) {
+                    newList = newList.filter(id => id !== moodId);
+                } else {
+                    if (newList.length >= 3) return;
+                    newList = newList.filter(id => !moodObj.conflicts.includes(id));
+                    newList.push(moodId);
+                }
+                setSelectedMoods(newList);
+            };
+
+            const calculateBiorhythm = (date, mbtiString) => {
+                const mbtiHash = mbtiString.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                const seed = date.getTime() + (mbtiHash * 100000);
+                const calculate = (period) => Math.sin((seed / (24 * 60 * 60 * 1000) / period) * 2 * Math.PI);
+                return {
+                    physical: Math.round(calculate(23) * 50 + 50),
+                    emotional: Math.round(calculate(28) * 50 + 50),
+                    intellectual: Math.round(calculate(33) * 50 + 50)
+                };
+            };
+
+            const runCuration = () => {
+                setIsLoading(true);
+                const bio = calculateBiorhythm(baseDate, mbti);
+                const avgBio = (bio.physical + bio.emotional + bio.intellectual) / 3;
+                let abvTarget = "Standard"; 
+                if (avgBio > 65) abvTarget = "High"; 
+                if (avgBio < 35) abvTarget = "Low"; 
+
+                const priceRange = PRICE_RANGES.find(r => r.id === selectedPriceRange);
+                let availableWhiskies = SPIRITS_DB.filter(w => w.priceKrw >= priceRange.min && w.priceKrw <= priceRange.max);
+                
+                if (availableWhiskies.length === 0) {
+                    availableWhiskies = SPIRITS_DB;
+                }
+
+                const scoredWhiskeys = availableWhiskies.map(w => {
+                    let score = 0;
+                    
+                    // 1. Price check
+                    if (w.priceKrw < priceRange.min || w.priceKrw > priceRange.max) {
+                        score -= 5000;
+                    }
+                    
+                    // 2. Exact Archetype Match Bonus
+                    if (w.archetype.includes(mbti)) score += 300;
+
+                    // 3. Dynamic Trait Scoring (E/I, S/N, T/F, J/P)
+                    const userTraits = mbti.split('');
+                    userTraits.forEach(trait => {
+                        const preferredTags = MBTI_TRAIT_PREFS[trait] || [];
+                        w.tags.forEach(tag => {
+                            if (preferredTags.includes(tag)) {
+                                score += 60; 
+                            }
+                        });
+                    });
+
+                    // 4. Mood Match Scoring
+                    selectedMoods.forEach(moodId => {
+                        const moodData = MOODS.find(m => m.id === moodId);
+                        w.tags.forEach(tag => {
+                            if (moodData.flavorProfile.includes(tag)) {
+                                score += 150;
+                            }
+                        });
+                    });
+                    
+                    // 5. ABV Match based on Biorhythm
+                    if (abvTarget === "High") {
+                        if (w.abv >= 50) score += 200; else score -= 100;
+                    } else if (abvTarget === "Low") {
+                        if (w.abv <= 43) score += 200; else if (w.abv >= 50) score -= 150;
+                    } else {
+                        if (w.abv >= 40 && w.abv < 50) score += 100;
+                    }
+                    
+                    return { ...w, totalScore: score };
+                }).sort((a, b) => b.totalScore - a.totalScore);
+
+                const topWhiskey = scoredWhiskeys[0];
+                const analysis = ANALYSIS_LOGIC.generateReport(mbti, selectedMoods, lang);
+
+                let label = "Neutral";
+                if (topWhiskey.totalScore >= 800) label = "Best";
+                else if (topWhiskey.totalScore >= 500) label = "Good";
+                else if (topWhiskey.totalScore < 100) label = "Worst";
+                else if (topWhiskey.totalScore < 300) label = "Bad";
+
+                setTimeout(() => {
+                    setResult({
+                        whiskey: topWhiskey,
+                        biorhythm: bio,
+                        label: label,
+                        abvTarget: abvTarget,
+                        analysis: analysis
+                    });
+                    setStep(4);
+                    setIsLoading(false);
+                }, 3000);
+            };
+
+            // NEW: Run Completely Random Curation
+            const runRandomCuration = () => {
+                setIsLoading(true);
+                
+                // 1. Pick a completely random MBTI from the valid types array
+                const randomGroup = MBTI_GROUPS[Math.floor(Math.random() * MBTI_GROUPS.length)];
+                const randomMbti = randomGroup.types[Math.floor(Math.random() * randomGroup.types.length)];
+                
+                // 2. Pick a completely random Mood
+                const randomMood = MOODS[Math.floor(Math.random() * MOODS.length)].id;
+                
+                // 3. Pick a completely random Spirit from the database
+                const randomSpirit = SPIRITS_DB[Math.floor(Math.random() * SPIRITS_DB.length)];
+                
+                // Set state so UI reflects the random choices if the user goes back
+                setMbti(randomMbti);
+                setSelectedMoods([randomMood]);
+                
+                const bio = calculateBiorhythm(baseDate, randomMbti);
+                // We use the new random values directly for the report to ensure sync
+                const analysis = ANALYSIS_LOGIC.generateReport(randomMbti, [randomMood], lang);
+                
+                setTimeout(() => {
+                    setResult({
+                        whiskey: randomSpirit,
+                        biorhythm: bio,
+                        label: "Surprise", // Special label for random pick
+                        abvTarget: "Any",
+                        analysis: analysis
+                    });
+                    setStep(4);
+                    setIsLoading(false);
+                }, 3000);
+            };
+
+            const resultText = useMemo(() => {
+                if (!result) return null;
+                const topWhiskey = result.whiskey;
+                const introPhrases = {
+                    ko: ["결론적으로 말씀드리면,", "데이터가 가리키는 단 하나의 선택,", "전문가의 관점에서 본다면,", "당신의 리듬이 원하고 있는 것은,"],
+                    en: ["In conclusion,", "The data points to one choice,", "From an expert's perspective,", "Your rhythm desires this,"]
+                };
+                const introIndex = topWhiskey.name.length % 4;
+                const intro = introPhrases[lang][introIndex];
+
+                const moodString = selectedMoods.map(m => {
+                   const mood = MOODS.find(md => md.id === m);
+                   return mood ? mood.label[lang] : ""; 
+                }).join(', ');
+                
+                const summary = lang === 'ko'
+                    ? `${mbti} 성향의 내면적 탐구와 오늘의 ${moodString} 감정을 완벽하게 보완하기 위해 ${topWhiskey.style} 스타일이 당신의 선택이 되어야 합니다.`
+                    : `${topWhiskey.style} style perfectly complements your ${mbti} introspective nature and today's feeling of ${moodString}.`;
+
+                return { intro, summary };
+            }, [result, lang, mbti, selectedMoods]);
+
+            const handleGoogleSearch = () => {
+                if (!result) return;
+                const query = encodeURIComponent(lang === 'ko' ? `${result.whiskey.name} 가격` : `${result.whiskey.nameEn} price`);
+                window.open(`https://www.google.com/search?q=${query}`, '_blank');
+            };
+
+            const handleOpenPriceModal = () => {
+                setIsPriceModalOpen(true);
+            };
+
+            if (isLoading) {
+                return <LoadingScreen lang={lang} />;
+            }
+
+            return (
+                <div className="min-h-screen flex flex-col items-center p-6 pb-24 max-w-2xl mx-auto transition-colors duration-300">
+                    {/* Header */}
+                    <header className="w-full flex justify-between items-center mb-8">
+                        <div className="flex items-center gap-2">
+                            <div className="p-2 bg-teal-600 rounded-xl text-white">
+                                <Icon name="wine" className="w-5 h-5" />
+                            </div>
+                            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+                                {t.title}
+                            </h1>
+                        </div>
+                        <div className="flex gap-2">
+                            <button 
+                                onClick={() => setLang(l => l === 'ko' ? 'en' : 'ko')} 
+                                className="px-3 py-1.5 text-xs font-bold rounded-full border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                            >
+                                {lang === 'ko' ? 'KR' : 'EN'}
+                            </button>
+                            <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-300">
+                                <Icon name={isDarkMode ? "moon" : "sun"} className={`w-5 h-5 ${isDarkMode ? 'text-yellow-400 fill-current' : 'text-amber-500 fill-current'}`} />
+                            </button>
+                        </div>
+                    </header>
+
+                    {/* Step 1: MBTI & Date */}
+                    {step === 1 && (
+                        <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <section>
+                                <h2 className="text-2xl font-extrabold mb-6 text-slate-900 dark:text-white">{t.step1_title}</h2>
+                                <div className="space-y-6">
+                                    {MBTI_GROUPS.map((group) => (
+                                        <div key={group.key} className="space-y-2">
+                                            <h3 className={`text-sm font-bold ${group.color} uppercase tracking-wider pl-1`}>
+                                                {group.label[lang]}
+                                            </h3>
+                                            <div className="grid grid-cols-4 gap-2">
+                                                {group.types.map(type => (
+                                                    <button 
+                                                        key={type}
+                                                        onClick={() => setMbti(type)}
+                                                        className={`py-3 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-1 ${
+                                                            mbti === type 
+                                                            ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 ring-2 ring-teal-600/20' 
+                                                            : 'border-transparent bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                                        } shadow-sm`}
+                                                    >
+                                                        <span className="font-bold text-sm">{type}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+
+                            <section>
+                                <h2 className="text-2xl font-extrabold mb-4 text-slate-900 dark:text-white">{t.step1_date}</h2>
+                                <button 
+                                    onClick={() => setIsCalendarOpen(true)}
+                                    className="w-full p-5 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-between hover:bg-teal-50 dark:hover:bg-teal-900/10 transition-colors border border-slate-100 dark:border-slate-700 shadow-sm group"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-2 bg-slate-100 dark:bg-slate-700 rounded-lg text-teal-600">
+                                            <Icon name="calendar" />
+                                        </div>
+                                        <span className="font-bold text-lg text-slate-800 dark:text-slate-200">
+                                            {baseDate.toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                        </span>
+                                    </div>
+                                    <Icon name="chevron-right" className="text-slate-400 group-hover:translate-x-1 transition-transform" />
+                                </button>
+                            </section>
+
+                            <div className="flex flex-col gap-3">
+                                <button onClick={() => setStep(2)} className="w-full py-4 rounded-2xl bg-teal-600 text-white font-bold text-lg hover:bg-teal-700 transition-all shadow-lg shadow-teal-600/30">
+                                    {t.step_next}
+                                </button>
+                                <button onClick={runRandomCuration} className="w-full py-4 rounded-2xl bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 font-bold text-lg hover:scale-[1.02] transition-transform shadow-lg">
+                                    {t.random_btn}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Step 2: Mood Selection */}
+                    {step === 2 && (
+                        <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <header className="flex flex-col gap-1">
+                                <button onClick={() => setStep(1)} className="self-start text-slate-400 hover:text-slate-600 mb-2">
+                                    <Icon name="arrow-left" />
+                                </button>
+                                <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white">{t.step2_title}</h2>
+                                <p className="text-slate-500 dark:text-slate-400 text-sm">{t.step2_sub}</p>
+                            </header>
+                            
+                            <div className="grid grid-cols-1 gap-3">
+                                {MOODS.map(mood => (
+                                    <button 
+                                        key={mood.id}
+                                        onClick={() => handleMoodClick(mood.id)}
+                                        className={`p-4 rounded-2xl border-2 flex flex-row items-center gap-4 transition-all text-left ${
+                                            selectedMoods.includes(mood.id) 
+                                            ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/30 shadow-md ring-1 ring-teal-600/30' 
+                                            : 'border-transparent bg-white dark:bg-slate-800 shadow-sm'
+                                        }`}
+                                    >
+                                        <div className={`p-3 rounded-full bg-white dark:bg-slate-700 shadow-sm shrink-0 relative w-14 h-14 flex items-center justify-center`}>
+                                            <span className="text-3xl">{mood.emoji}</span>
+                                        </div>
+                                        <span className={`text-base font-bold flex-1 ${selectedMoods.includes(mood.id) ? 'text-teal-900 dark:text-teal-100' : 'text-slate-600 dark:text-slate-400'}`}>
+                                            {mood.desc[lang]}
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="flex flex-col gap-3">
+                                <button 
+                                    onClick={() => setStep(3)} 
+                                    disabled={selectedMoods.length === 0}
+                                    className={`w-full py-4 rounded-2xl bg-teal-600 text-white font-bold text-lg shadow-xl shadow-teal-600/30 ${selectedMoods.length === 0 ? 'opacity-50 grayscale cursor-not-allowed' : 'hover:bg-teal-700'}`}
+                                >
+                                    {t.step_next}
+                                </button>
+                                <button onClick={runRandomCuration} className="w-full py-4 rounded-2xl bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 font-bold text-lg hover:scale-[1.02] transition-transform shadow-lg">
+                                    {t.random_btn}
+                                </button>
+                                <button 
+                                    onClick={() => setStep(1)}
+                                    className="w-full py-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-medium text-sm transition-colors"
+                                >
+                                    {t.step_prev}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Step 3: Price Selection */}
+                    {step === 3 && (
+                        <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <header className="flex flex-col gap-1">
+                                <button onClick={() => setStep(2)} className="self-start text-slate-400 hover:text-slate-600 mb-2">
+                                    <Icon name="arrow-left" />
+                                </button>
+                                <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white">{t.step3_title}</h2>
+                            </header>
+                            
+                            <div className="grid grid-cols-1 gap-3">
+                                {PRICE_RANGES.map(range => (
+                                    <button 
+                                        key={range.id}
+                                        onClick={() => setSelectedPriceRange(range.id)}
+                                        className={`p-5 rounded-2xl border-2 flex items-center justify-between transition-all ${
+                                            selectedPriceRange === range.id 
+                                            ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/30 shadow-md ring-1 ring-teal-600/30' 
+                                            : 'border-transparent bg-white dark:bg-slate-800 shadow-sm'
+                                        }`}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={`p-2 rounded-full ${selectedPriceRange === range.id ? 'bg-teal-100 dark:bg-teal-800 text-teal-600 dark:text-teal-200' : 'bg-slate-100 dark:bg-slate-700 text-slate-400'}`}>
+                                                <Icon name="credit-card" className="w-5 h-5" />
+                                            </div>
+                                            <span className={`font-bold text-lg ${selectedPriceRange === range.id ? 'text-teal-900 dark:text-teal-100' : 'text-slate-600 dark:text-slate-400'}`}>
+                                                {range.label[lang]}
+                                            </span>
+                                        </div>
+                                        {selectedPriceRange === range.id && <Icon name="check" className="text-teal-600 dark:text-teal-400" />}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="flex flex-col gap-3">
+                                <button 
+                                    onClick={runCuration} 
+                                    className="w-full py-4 rounded-2xl amber-button font-bold text-lg shadow-xl shadow-amber-500/20"
+                                >
+                                    {t.run_btn}
+                                </button>
+                                <button onClick={runRandomCuration} className="w-full py-4 rounded-2xl bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 font-bold text-lg hover:scale-[1.02] transition-transform shadow-lg">
+                                    {t.random_btn}
+                                </button>
+                                <button 
+                                    onClick={() => setStep(2)}
+                                    className="w-full py-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-medium text-sm transition-colors"
+                                >
+                                    {t.step_prev}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Result Page */}
+                    {step === 4 && result && (
+                        <div className="w-full space-y-8 animate-in zoom-in-95 duration-700">
+                            {/* Biorhythm Section */}
+                            <section className="text-center">
+                                <h3 className="text-xs font-bold text-teal-600 dark:text-teal-400 mb-6 uppercase tracking-widest border-b border-teal-100 dark:border-teal-900 pb-2 inline-block px-4">
+                                    {t.result_bio}
+                                </h3>
+                                <div className="grid grid-cols-3 gap-3">
+                                    <BioIndicator label={lang === 'ko' ? "신체" : "Physical"} value={result.biorhythm.physical} icon="activity" />
+                                    <BioIndicator label={lang === 'ko' ? "감성" : "Emotion"} value={result.biorhythm.emotional} icon="heart" />
+                                    <BioIndicator label={lang === 'ko' ? "지성" : "Intellect"} value={result.biorhythm.intellectual} icon="brain" />
+                                </div>
+                                <p className="mt-4 text-xs font-medium text-slate-400 dark:text-slate-500">
+                                    {t.bio_rec} <strong className="text-teal-600 dark:text-teal-400 uppercase">{result.abvTarget} ABV</strong>
+                                </p>
+                            </section>
+
+                            {/* Main Recommendation Card */}
+                            <section className="relative group perspective-1000">
+                                <div className="absolute -inset-1 bg-gradient-to-r from-teal-500 to-amber-500 rounded-3xl blur opacity-20 group-hover:opacity-30 transition duration-1000"></div>
+                                <div className="relative p-8 glass-morphism rounded-3xl overflow-hidden shadow-2xl">
+                                    <div className="flex flex-col w-full">
+                                        <div className="flex justify-between items-start mb-6">
+                                            <span className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider shadow-sm ${
+                                                result.label === 'Surprise' ? 'bg-indigo-600 text-white' : 
+                                                result.label === 'Best' ? 'bg-blue-600 text-white' : 
+                                                result.label === 'Good' ? 'bg-teal-600 text-white' : 'bg-slate-500 text-white'
+                                            }`}>
+                                                {result.label === 'Surprise' ? (lang === 'ko' ? '운명적 만남 🎲' : 'Lucky Pick 🎲') : `${t.match_label}: ${result.label}`}
+                                            </span>
+                                            <span className="text-slate-500 dark:text-slate-400 font-mono text-sm font-bold bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">
+                                                {result.whiskey.abv}% ABV
+                                            </span>
+                                        </div>
+                                        
+                                        <h2 className="text-4xl font-black mb-2 leading-tight text-slate-900 dark:text-white">
+                                            {lang === 'ko' ? result.whiskey.name : result.whiskey.nameEn}
+                                        </h2>
+                                        <p className="text-teal-600 dark:text-teal-400 font-bold mb-6 text-lg">
+                                            {result.whiskey.style}
+                                        </p>
+                                        
+                                        <div className="flex flex-wrap gap-2 mb-8">
+                                            {result.whiskey.tags.map(tag => (
+                                                <span key={tag} className="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">
+                                                    #{tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                        
+                                        <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-8 font-medium">
+                                            {lang === 'ko' ? result.whiskey.desc : result.whiskey.descEn}
+                                        </p>
+
+                                        {/* Price Tag - Now triggers Modal */}
+                                        <div className="flex items-center gap-2 mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-100 dark:border-amber-800/30 cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors group" onClick={handleOpenPriceModal}>
+                                            <div className="p-2 bg-amber-100 dark:bg-amber-800/50 rounded-full text-amber-600 dark:text-amber-400">
+                                                <Icon name="tag" className="w-4 h-4" />
+                                            </div>
+                                            <div className="flex-1 flex justify-between items-center">
+                                                <div>
+                                                    <p className="text-xs text-amber-800 dark:text-amber-200 font-bold uppercase opacity-70">
+                                                        {t.price_label}
+                                                    </p>
+                                                    <p className="text-lg font-black text-amber-900 dark:text-amber-100">
+                                                        {lang === 'ko' ? (result.whiskey.priceRangeKrw || result.whiskey.priceKrw.toLocaleString() + "원") : `$${result.whiskey.priceUsd} USD`}
+                                                    </p>
+                                                </div>
+                                                <div className="flex items-center gap-1 text-xs text-amber-700 dark:text-amber-300 font-semibold group-hover:underline">
+                                                    {t.price_check} <Icon name="search" className="w-3 h-3" />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="p-5 bg-teal-50 dark:bg-teal-900/20 rounded-2xl border border-teal-100 dark:border-teal-900/50">
+                                            <p className="text-sm font-bold text-teal-800 dark:text-teal-200 mb-2">{resultText.intro}</p>
+                                            <p className="text-sm text-teal-700 dark:text-teal-300 leading-relaxed">
+                                                {resultText.summary}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Action Button - Direct Google Search */}
+                            <button 
+                                onClick={handleGoogleSearch}
+                                className="w-full py-4 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-lg hover:scale-[1.02] transition-transform flex items-center justify-center gap-2 shadow-lg"
+                            >
+                                <Icon name="shopping-cart" />
+                                {t.buy_btn}
+                            </button>
+
+                            {/* Behavioral Economics & Neurobiology Report */}
+                            <section className="space-y-4 pt-4">
+                                <h3 className="text-lg font-bold flex items-center gap-2 text-slate-800 dark:text-slate-200">
+                                    <Icon name="microscope" className="text-teal-600" />
+                                    {t.report_title}
+                                </h3>
+                                <div className="space-y-3">
+                                    <div className="p-6 bg-white dark:bg-slate-900 rounded-2xl border-l-4 border-teal-600 shadow-sm">
+                                        <h4 className="font-bold mb-2 text-slate-900 dark:text-white text-sm flex items-center gap-2">
+                                            <Icon name="brain" className="w-4 h-4 text-teal-600" />
+                                            {result.analysis?.judgmentTitle}
+                                        </h4>
+                                        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                                            {result.analysis?.judgmentDesc}
+                                        </p>
+                                    </div>
+                                    <div className="p-6 bg-white dark:bg-slate-900 rounded-2xl border-l-4 border-amber-500 shadow-sm">
+                                        <h4 className="font-bold mb-2 text-slate-900 dark:text-white text-sm flex items-center gap-2">
+                                            <Icon name="footprints" className="w-4 h-4 text-amber-500" />
+                                            {result.analysis?.behaviorTitle}
+                                        </h4>
+                                        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                                            {result.analysis?.behaviorDesc}
+                                        </p>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <button onClick={() => setStep(1)} className="w-full py-4 rounded-2xl border-2 border-teal-600 text-teal-600 dark:text-teal-400 font-bold hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-all">
+                                {t.reset_btn}
+                            </button>
+                        </div>
+                    )}
+
+                    <PriceCheckModal 
+                        isOpen={isPriceModalOpen} 
+                        onClose={() => setIsPriceModalOpen(false)} 
+                        result={result} 
+                        lang={lang} 
+                    />
+
+                    <CalendarModal 
+                        isOpen={isCalendarOpen} 
+                        onClose={() => setIsCalendarOpen(false)} 
+                        onSelect={setBaseDate} 
+                        selectedDate={baseDate} 
+                        lang={lang} 
+                    />
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
