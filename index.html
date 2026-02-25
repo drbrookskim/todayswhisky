@@ -105,7 +105,7 @@
                 step_next: "다음 단계",
                 step_prev: "이전 단계",
                 step2_title: "오늘 기분은 어떤가요?",
-                step2_sub: "최대 3개 선택. 상충하는 감정은 자동 해제됩니다.",
+                step2_sub: "최대 3개까지 선택할 수 있습니다. 상충하는 감정은 자동으로 해제됩니다.",
                 step3_title: "예산은 어느 정도인가요?",
                 run_btn: "추천 엔진 가동",
                 random_btn: "난 그냥 아무거나 마실래요! 🎲",
@@ -304,7 +304,7 @@
                 let moodState = 'neutral';
                 const moodId = moods && moods.length > 0 ? moods[0] : 'joy';
 
-                if (['joy', 'anticipation', 'surprise'].includes(moodId)) {
+                if (['delight', 'joy', 'anticipation', 'surprise'].includes(moodId)) {
                     moodState = 'positive';
                 } else if (['sadness', 'anger', 'fear', 'disgust'].includes(moodId)) {
                     moodState = 'negative';
@@ -360,9 +360,19 @@
         
         const MOODS = [
             { 
+                id: 'delight', 
+                label: { ko: '즐거움', en: 'Delight' },
+                desc: { ko: "즐거운 날이에요. 즐거움에는 이유가 없어요.", en: "It's a joyful day. Joy needs no reason." },
+                emoji: "😆",
+                icon: 'sparkles', 
+                color: 'text-amber-400', 
+                conflicts: ['sadness', 'anger', 'fear', 'disgust'], 
+                flavorProfile: ['sweet', 'fruity', 'floral', 'fresh'] 
+            },
+            { 
                 id: 'joy', 
                 label: { ko: '기쁨', en: 'Joy' },
-                desc: { ko: "기쁜 날이에요. 축하주 한 잔?", en: "Happy day. Celebration drink?" },
+                desc: { ko: "기쁜 날이에요. 축하주 한 잔 어떠세요?", en: "Happy day. How about a celebration drink?" },
                 emoji: "😁",
                 icon: 'smile', 
                 color: 'text-yellow-500', 
@@ -372,47 +382,47 @@
             { 
                 id: 'sadness', 
                 label: { ko: '슬픔', en: 'Sadness' },
-                desc: { ko: "마음 슬픈 날이에요. 위로주 한 잔?", en: "Feeling sad. Comfort drink?" },
+                desc: { ko: "마음이 슬픈 날이에요. 위로주 한 잔 어떠세요?", en: "Feeling sad. How about a comfort drink?" },
                 emoji: "😢",
                 icon: 'frown', 
                 color: 'text-blue-500', 
-                conflicts: ['joy'], 
+                conflicts: ['joy', 'delight'], 
                 flavorProfile: ['mellow', 'balanced', 'rich', 'sherry', 'floral'] 
             },
             { 
                 id: 'anger', 
                 label: { ko: '분노', en: 'Anger' },
-                desc: { ko: "화가 많은 날이에요. 스트레스 풀기 위해 한 잔?", en: "Angry day? Stress relief drink?" },
+                desc: { ko: "화가 나는 날이에요. 스트레스를 풀기 위해 한 잔 어떠세요?", en: "Angry day? How about a drink for stress relief?" },
                 emoji: "😡",
                 icon: 'flame', 
                 color: 'text-red-500', 
-                conflicts: ['joy', 'trust', 'calm'], 
+                conflicts: ['joy', 'delight', 'trust', 'anticipation'], 
                 flavorProfile: ['smoky', 'intense', 'peppery', 'cask_strength', 'bold'] 
             },
             { 
                 id: 'trust', 
-                label: { ko: '신뢰', en: 'Trust' },
-                desc: { ko: "마음이 편한 날이에요. 이런 날은 한 잔 해줘야∙∙∙?", en: "Relaxed day. A drink for today?" },
+                label: { ko: '편안함', en: 'Comfort' },
+                desc: { ko: "마음이 편안한 날이에요. 이런 날엔 한 잔 해야죠?", en: "Relaxed day. A drink for today?" },
                 emoji: "😌",
                 icon: 'shield-check', 
                 color: 'text-emerald-500', 
-                conflicts: ['anger', 'fear'], 
+                conflicts: ['anger', 'fear', 'disgust'], 
                 flavorProfile: ['balanced', 'smooth', 'mellow', 'classic', 'oak'] 
             },
             { 
                 id: 'fear', 
-                label: { ko: '두려움', en: 'Fear' },
-                desc: { ko: "불안하고 걱정되는 날이에요. 살짝 잊기 위해서 한 잔?", en: "Anxious? A drink to forget?" },
+                label: { ko: '불안함', en: 'Fear' },
+                desc: { ko: "불안하고 걱정되는 날이에요. 잠시 잊기 위해 한 잔 어떠세요?", en: "Anxious? How about a drink to forget?" },
                 emoji: "😨",
                 icon: 'ghost', 
                 color: 'text-purple-500', 
-                conflicts: ['trust', 'joy'], 
+                conflicts: ['trust', 'joy', 'delight'], 
                 flavorProfile: ['intense', 'bold', 'spicy', 'complex'] 
             },
             { 
                 id: 'surprise', 
                 label: { ko: '놀람', en: 'Surprise' },
-                desc: { ko: "서프라이즈가 있었던 날이에요. 이런 날은 놀람을 달래기 위해서 한 잔?", en: "Surprised? Calming drink?" },
+                desc: { ko: "깜짝 놀랄 일이 있었던 날이에요. 놀란 마음을 달래기 위해 한 잔 어떠세요?", en: "Surprised? How about a calming drink?" },
                 emoji: "😲",
                 icon: 'zap', 
                 color: 'text-cyan-500', 
@@ -421,22 +431,22 @@
             },
             { 
                 id: 'anticipation', 
-                label: { ko: '기대', en: 'Anticipation' },
-                desc: { ko: "설레는 일이 있는 날이에요. 기념으로 한 잔?", en: "Excited? Commemorative drink?" },
+                label: { ko: '기대감', en: 'Anticipation' },
+                desc: { ko: "설레는 일이 있는 날이에요. 기념으로 한 잔 어떠세요?", en: "Excited? How about a commemorative drink?" },
                 emoji: "🤩",
                 icon: 'compass', 
                 color: 'text-orange-500', 
-                conflicts: [], 
+                conflicts: ['sadness', 'anger', 'disgust'], 
                 flavorProfile: ['floral', 'honey', 'orange', 'fresh', 'sweet'] 
             },
             { 
                 id: 'disgust', 
-                label: { ko: '거부감', en: 'Disgust' },
-                desc: { ko: "기분이 매우 언짢은 날이에요. 기분전환을 위해서 한 잔?", en: "Unpleasant day? Refreshing drink?" },
+                label: { ko: '불쾌함', en: 'Disgust' },
+                desc: { ko: "기분이 매우 언짢은 날이에요. 기분 전환을 위해 한 잔 어떠세요?", en: "Unpleasant day? How about a refreshing drink?" },
                 emoji: "😖",
                 icon: 'thumbs-down', 
                 color: 'text-green-700', 
-                conflicts: ['joy'], 
+                conflicts: ['joy', 'delight', 'trust'], 
                 flavorProfile: ['smoky', 'bold', 'intense', 'herbal', 'clean'] 
             }
         ];
