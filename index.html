@@ -104,9 +104,11 @@
                 step1_date: "날짜를 선택하세요.",
                 step_next: "다음 단계",
                 step_prev: "이전 단계",
-                step2_title: "오늘 기분은 어떤가요?",
-                step2_sub: "최대 3개까지 선택할 수 있습니다. 상충하는 감정은 자동으로 해제됩니다.",
-                step3_title: "예산은 어느 정도인가요?",
+                step2_title: "오늘 하루를 한 문장으로 표현한다면?",
+                step2_sub: "가장 공감되는 상황을 선택해주세요. (최대 3개)",
+                step3_title: "당신의 현재 심리 상태를 분석했습니다.",
+                step3_sub: "선택하신 상황들이 모여 아래와 같은 마음의 결을 이루고 있네요.",
+                step4_title: "예산은 어느 정도인가요?",
                 run_btn: "추천 엔진 가동",
                 random_btn: "난 그냥 아무거나 마실래요! 🎲",
                 result_bio: "오늘의 바이오리듬",
@@ -132,9 +134,11 @@
                 step1_date: "Select a date.",
                 step_next: "Next Step",
                 step_prev: "Previous Step",
-                step2_title: "How is your mood today?",
-                step2_sub: "Select up to 3. Conflicting moods auto-deselect.",
-                step3_title: "What is your budget?",
+                step2_title: "If you could express today in one sentence?",
+                step2_sub: "Select the situation that resonates most. (Up to 3)",
+                step3_title: "We analyzed your current state of mind.",
+                step3_sub: "The situations you selected combine into the following emotional state.",
+                step4_title: "What is your budget?",
                 run_btn: "Run Curation Engine",
                 random_btn: "I'll just drink anything! 🎲",
                 result_bio: "Today's Biorhythm",
@@ -257,7 +261,7 @@
                             en: "Stable serotonin relies on 'Availability Heuristic,' validating the present through past joy. You minimize cognitive dissonance by choosing proven classics over risky adventures."
                         },
                         negative: {
-                            ko: "예측 불가능한 상황에 대한 스트레스로 편도체(Amygdala)가 활성화되었습니다. 잃어버린 '통제 환상(Illusion of Control)'을 되찾기 위해 정리정돈을 하거나 규칙을 재확인하려는 강박적 판단이 두드러지며, 변화를 위협으로 간주합니다.",
+                            ko: "예측 불가능한 상황에 대한 스트레스로 편도체(Amygdala)가 활성화되었습니다. 잃어버린 '통제 환상(Illusion 단Control)'을 되찾기 위해 정리정돈을 하거나 규칙을 재확인하려는 강박적 판단이 두드러지며, 변화를 위협으로 간주합니다.",
                             en: "Unpredictability triggers the amygdala. You may compulsively seek the 'Illusion of Control' through organizing or reaffirming rules. Change is perceived as a threat."
                         },
                         neutral: {
@@ -397,6 +401,7 @@
                 id: 'delight', 
                 label: { ko: '즐거움', en: 'Delight' },
                 desc: { ko: "즐거운 날이에요. 즐거움에는 이유가 없어요.", en: "It's a joyful day. Joy needs no reason." },
+                expr: { ko: "이유 없이 자꾸만 웃음이 나는 기분 좋은 하루", en: "A pleasant day that makes me smile for no reason" },
                 emoji: "😆",
                 icon: 'sparkles', 
                 color: 'text-amber-400', 
@@ -407,6 +412,7 @@
                 id: 'joy', 
                 label: { ko: '기쁨', en: 'Joy' },
                 desc: { ko: "기쁜 날이에요. 축하주 한 잔 어떠세요?", en: "Happy day. How about a celebration drink?" },
+                expr: { ko: "축하할 일이 생겨서 가슴이 벅차오르는 하루", en: "A heart-filling day with something to celebrate" },
                 emoji: "😁",
                 icon: 'smile', 
                 color: 'text-yellow-500', 
@@ -417,6 +423,7 @@
                 id: 'sadness', 
                 label: { ko: '슬픔', en: 'Sadness' },
                 desc: { ko: "마음이 슬픈 날이에요. 위로주 한 잔 어떠세요?", en: "Feeling sad. How about a comfort drink?" },
+                expr: { ko: "누군가의 따뜻한 위로가 간절히 필요한 하루", en: "A day where I desperately need someone's warm comfort" },
                 emoji: "😢",
                 icon: 'frown', 
                 color: 'text-blue-500', 
@@ -427,6 +434,7 @@
                 id: 'anger', 
                 label: { ko: '분노', en: 'Anger' },
                 desc: { ko: "화가 나는 날이에요. 스트레스를 풀기 위해 한 잔 어떠세요?", en: "Angry day? How about a drink for stress relief?" },
+                expr: { ko: "스트레스 폭발! 다 내려놓고 소리치고 싶은 하루", en: "Stress explosion! A day I want to drop everything and scream" },
                 emoji: "😡",
                 icon: 'flame', 
                 color: 'text-red-500', 
@@ -437,6 +445,7 @@
                 id: 'trust', 
                 label: { ko: '편안함', en: 'Comfort' },
                 desc: { ko: "마음이 편안한 날이에요. 이런 날엔 한 잔 해야죠?", en: "Relaxed day. A drink for today?" },
+                expr: { ko: "큰 일 없이 무탈하고 잔잔하게 흘러간 평화로운 하루", en: "A peaceful day that flowed calmly without any big issues" },
                 emoji: "😌",
                 icon: 'shield-check', 
                 color: 'text-emerald-500', 
@@ -447,6 +456,7 @@
                 id: 'fear', 
                 label: { ko: '불안함', en: 'Fear' },
                 desc: { ko: "불안하고 걱정되는 날이에요. 잠시 잊기 위해 한 잔 어떠세요?", en: "Anxious? How about a drink to forget?" },
+                expr: { ko: "해결되지 않은 고민 때문에 내일이 두렵고 걱정되는 하루", en: "An anxious day full of worries about unresolved issues" },
                 emoji: "😨",
                 icon: 'ghost', 
                 color: 'text-purple-500', 
@@ -457,6 +467,7 @@
                 id: 'surprise', 
                 label: { ko: '놀람', en: 'Surprise' },
                 desc: { ko: "깜짝 놀랄 일이 있었던 날이에요. 놀란 마음을 달래기 위해 한 잔 어떠세요?", en: "Surprised? How about a calming drink?" },
+                expr: { ko: "전혀 예상하지 못한 일이 생겨서 깜짝 놀란 하루", en: "A day of sudden surprise due to something completely unexpected" },
                 emoji: "😲",
                 icon: 'zap', 
                 color: 'text-cyan-500', 
@@ -467,6 +478,7 @@
                 id: 'anticipation', 
                 label: { ko: '기대감', en: 'Anticipation' },
                 desc: { ko: "설레는 일이 있는 날이에요. 기념으로 한 잔 어떠세요?", en: "Excited? How about a commemorative drink?" },
+                expr: { ko: "곧 다가올 즐거운 일정 때문에 마음이 붕 뜨는 하루", en: "A fluttering day because of an upcoming fun schedule" },
                 emoji: "🤩",
                 icon: 'compass', 
                 color: 'text-orange-500', 
@@ -477,6 +489,7 @@
                 id: 'disgust', 
                 label: { ko: '불쾌함', en: 'Disgust' },
                 desc: { ko: "기분이 매우 언짢은 날이에요. 기분 전환을 위해 한 잔 어떠세요?", en: "Unpleasant day? Refreshing drink?" },
+                expr: { ko: "마주치기 싫은 상황 때문에 불쾌지수가 끝까지 올라간 하루", en: "A day where my discomfort index maxed out due to an unwanted situation" },
                 emoji: "😖",
                 icon: 'thumbs-down', 
                 color: 'text-green-700', 
@@ -487,6 +500,7 @@
                 id: 'boredom', 
                 label: { ko: '무료함', en: 'Boredom' },
                 desc: { ko: "평범하고 심심한 하루네요. 무료함을 기분 좋게 날려버릴 한 잔 어떠세요?", en: "It's a dull day. How about a drink to blow away the boredom?" },
+                expr: { ko: "모든 게 귀찮고 의미 없이 시간만 흘러간 따분한 하루", en: "A dull day where everything is annoying and time just passed meaninglessly" },
                 emoji: "🥱",
                 icon: 'coffee', 
                 color: 'text-stone-500', 
@@ -530,7 +544,7 @@
             { name: "싱글톤 더프타운 12년", nameEn: "Singleton Dufftown 12YO", age: "12년", style: "Speyside Single Malt", tags: ["smooth", "fresh", "light", "mellow"], abv: 40, archetype: ["ISFP", "INFP", "ENFJ"], priceKrw: 70000, priceRangeKrw: "60,000원 ~ 70,000원", priceUsd: 50, variants: [{vol: "700ml", price: 70000}], desc: "[GQ 추천] 청사과 향의 부드러운 풍미. 아찔한 자극보다는 평안한 일상에 잘 어울리는 한 잔.", descEn: "Perfect for a peaceful day. A comfortable daily dram carrying smooth green apple flavors." },
             { name: "네이키드 몰트", nameEn: "Naked Malt", age: "NAS", style: "Blended Malt", tags: ["sweet", "fruity", "sherry", "rich"], abv: 40, archetype: ["ESFP", "ESTP"], priceKrw: 60000, priceRangeKrw: "60,000원대", priceUsd: 45, variants: [{vol: "700ml", price: 60000}], desc: "[GQ 추천] 맥캘란 등 유명 싱글몰트를 블렌딩해 셰리 캐스크에 추가 숙성. 건포도 풍미가 일품.", descEn: "Extra matured in sherry casks. Raisin and dried fruit flavors make it great for BBQs." },
             { name: "주라 프렌치오크", nameEn: "Jura French Oak", age: "NAS", style: "Island Single Malt", tags: ["floral", "fruity", "smooth", "vanilla"], abv: 40, archetype: ["INFP", "INFJ"], priceKrw: 90000, priceRangeKrw: "90,000원대", priceUsd: 65, variants: [{vol: "700ml", price: 90000}], desc: "[GQ 추천] 내 공간을 따뜻하게 꾸며주는 술. 부드러운 과일향과 바닐라 라떼 같은 향미.", descEn: "Soft fruit and floral notes. Hints of vanilla and caramel latte fill the room warmly." },
-            { name: "글렌그란트 아보랄리스", nameEn: "GlenGrant Arboralis", age: "NAS", style: "Speyside Single Malt", tags: ["fresh", "floral", "light", "citrus"], abv: 40, archetype: ["INTP", "ISTJ"], priceKrw: 60000, priceRangeKrw: "60,000원대", priceUsd: 45, variants: [{vol: "700ml", price: 60000}], desc: "[GQ 추천] 계곡물처럼 맑고 화사한 풍미. 시원한 하이볼로 들이켜면 하루의 피로가 씻겨나갑니다.", descEn: "Clear and bright like valley water. A highball of this washes away the day's fatigue." },
+            { name: "글렌그란트 아보랄리스", nameEn: "GlenGrant Arboralis", age: "NAS", style: "Speyside Single Malt", tags: ["fresh", "floral", "light", "citrus"], abv: 40, archetype: ["INTP", "ISTJ"], priceKrw: 60000, priceRangeKrw: "60,000원대", priceUsd: 45, variants: [{vol: "700ml", price: 60000}], desc: "[GQ 추천] 계곡물처럼 맑고 화사한 풍미. 시원한 하이볼로 들이켜면 하루의 피로가 일씻겨나갑니다.", descEn: "Clear and bright like valley water. A highball of this washes away the day's fatigue." },
             { name: "더 글렌리벳 12년", nameEn: "The Glenlivet 12 Years Old", age: "12년", style: "Speyside Single Malt", tags: ["fruity", "fresh", "smooth", "balanced"], abv: 40, archetype: ["ENFJ", "ESFJ"], priceKrw: 90000, priceRangeKrw: "80,000원 ~ 90,000원", priceUsd: 65, variants: [{vol: "700ml", price: 90000}], desc: "[GQ 추천] 휴양지로 떠나고 싶은 싱그러움. 잘 익은 파인애플과 사과의 부드럽고 달콤한 풍미.", descEn: "Fresh ripe pineapple and apple notes. It brings the urge to escape to a resort." },
             { name: "부나하벤 12년", nameEn: "Bunnahabhain 12 Year", age: "12년", style: "Unpeated Islay", tags: ["nutty", "sherry", "rich", "seaweed"], abv: 46.3, archetype: ["INFJ", "ISTJ"], priceKrw: 89000, priceRangeKrw: "89,000원 ~ 110,000원", priceUsd: 65, variants: [{vol: "700ml", price: 89000}], desc: "피트 없는 아일라. 셰리와 바다 내음의 독특하고 풍성한 조화.", descEn: "Unpeated Islay. A unique, rich blend of sherry and sea air." },
             { name: "그레이 구스", nameEn: "Grey Goose", age: "NAS", style: "Vodka", tags: ["smooth", "clean", "classic", "elegant"], abv: 40, archetype: ["ENTJ", "ESTJ", "ISFJ"], priceKrw: 60000, priceRangeKrw: "60,000원대", priceUsd: 45, variants: [{vol: "750ml", price: 60000}], desc: "프랑스 프리미엄 보드카. 극도로 섬세하고 부드러운 질감으로 어떤 기분에도 완벽히 스며듭니다.", descEn: "Premium French vodka. Extremely clean and smooth texture makes it a perfect base." },
@@ -816,6 +830,94 @@
                 setSelectedMoods(newList);
             };
 
+            // NEW: Mood blending logic to create synthesized mood from multiple selections
+            const getBlendedMood = (moodIds, currentLang) => {
+                // If only one mood, return the original
+                if (moodIds.length === 1) {
+                    const m = MOODS.find(x => x.id === moodIds[0]);
+                    return { 
+                        emoji: m.emoji, 
+                        label: m.label[currentLang], 
+                        desc: m.desc[currentLang],
+                        invite: currentLang === 'ko' ? "그럼 이제, 지금 기분에 딱 맞는 한 잔을 찾아볼까요?" : "Shall we find the perfect drink for your mood right now?"
+                    };
+                }
+
+                const has = (id) => moodIds.includes(id);
+                
+                // Specific interesting combinations (Synergies or stark contrasts)
+                if (has('anger') && has('disgust')) {
+                    return {
+                        emoji: "🌋",
+                        label: currentLang === 'ko' ? "끓어오르는 불쾌감" : "Boiling Resentment",
+                        desc: currentLang === 'ko' ? "스트레스와 불쾌지수가 겹쳐 극에 달해 당장이라도 터질 것 같은 위험한 상태입니다." : "Stress and discomfort have peaked, leaving you on the verge of exploding at any moment.",
+                        invite: currentLang === 'ko' ? "이런 날엔 속을 뻥 뚫어줄 강렬한 한 잔, 어떨까요?" : "How about an intense drink to clear your mind today?"
+                    };
+                }
+                if (has('sadness') && has('boredom')) {
+                    return {
+                        emoji: "🥀",
+                        label: currentLang === 'ko' ? "무기력한 우울" : "Lethargic Melancholy",
+                        desc: currentLang === 'ko' ? "몸도 마음도 무겁게 가라앉아, 모든 것이 멈춘 듯 한없이 짙고 쓸쓸한 상태입니다." : "Your body and mind feel heavy, leaving you in a deep, lonely state where everything seems to have stopped.",
+                        invite: currentLang === 'ko' ? "지친 마음을 가만히 안아줄 따뜻한 위로의 한 잔, 어떠세요?" : "How about a warm, comforting drink to gently embrace your weary heart?"
+                    };
+                }
+                if ((has('joy') || has('delight')) && has('anticipation')) {
+                    return {
+                        emoji: "🎊",
+                        label: currentLang === 'ko' ? "터질듯한 환희" : "Bursting Euphoria",
+                        desc: currentLang === 'ko' ? "기분 좋은 설렘과 완벽한 즐거움이 만나 긍정적인 에너지가 최고조로 넘쳐흐릅니다." : "Pleasant excitement and perfect joy meet, bringing your positive energy to an absolute peak.",
+                        invite: currentLang === 'ko' ? "이 완벽한 기분을 끝까지 끌어올려줄 축하주, 한 잔 할까요?" : "Shall we have a celebratory drink to elevate this perfect mood?"
+                    };
+                }
+                if (has('fear') && has('sadness')) {
+                    return {
+                        emoji: "🌫️",
+                        label: currentLang === 'ko' ? "막막한 두려움" : "Clouded Anxiety",
+                        desc: currentLang === 'ko' ? "해결되지 않은 불안과 슬픔이 뒤섞여, 앞이 안 보이는 짙은 안개 속에 갇힌 마음입니다." : "Unresolved anxiety and sadness mix together, leaving you feeling trapped in a thick fog.",
+                        invite: currentLang === 'ko' ? "복잡한 머릿속을 잠시 비워낼 수 있는 한 잔, 같이 찾아볼까요?" : "Shall we find a drink to help empty your complex thoughts for a moment?"
+                    };
+                }
+                if (has('trust') && (has('anticipation') || has('joy'))) {
+                    return {
+                        emoji: "🕊️",
+                        label: currentLang === 'ko' ? "평온한 설렘" : "Peaceful Excitement",
+                        desc: currentLang === 'ko' ? "마음은 잔잔하게 푹 안정되어 있지만, 그 속에서 내일을 향한 기분 좋은 설렘이 피어오릅니다." : "Your mind is deeply calm, yet a pleasant anticipation for tomorrow blooms within.",
+                        invite: currentLang === 'ko' ? "이 평온함을 기분 좋게 완성해 줄 한 잔, 어떠신가요?" : "How about a drink to pleasantly complete this tranquility?"
+                    };
+                }
+
+                // General fallback logic based on Positive / Negative valence
+                const positives = ['delight', 'joy', 'anticipation', 'surprise', 'trust'];
+                const negatives = ['sadness', 'anger', 'fear', 'disgust', 'boredom'];
+                
+                const posCount = moodIds.filter(id => positives.includes(id)).length;
+                const negCount = moodIds.filter(id => negatives.includes(id)).length;
+
+                if (posCount > 0 && negCount === 0) {
+                    return {
+                        emoji: "✨",
+                        label: currentLang === 'ko' ? "다채로운 긍정의 물결" : "Colorful Positivity",
+                        desc: currentLang === 'ko' ? "여러 가지 밝고 좋은 감정들이 환상적으로 시너지를 내며 하루를 반짝이게 만들어주고 있습니다." : "Various bright and wonderful emotions are synergizing fantastically to make your day sparkle.",
+                        invite: currentLang === 'ko' ? "기분 좋은 오늘, 완벽한 한 잔으로 하루를 마무리해 볼까요?" : "A great day like this, shall we finish it with a perfect drink?"
+                    };
+                } else if (negCount > 0 && posCount === 0) {
+                    return {
+                        emoji: "🌧️",
+                        label: currentLang === 'ko' ? "폭풍우 치는 내면" : "Stormy Inner World",
+                        desc: currentLang === 'ko' ? "여러 부정적인 감정들이 복잡하게 얽혀 마음속에 무거운 비바람이 몰아치고 있습니다. 쉼이 필요합니다." : "Multiple negative emotions are tangled, creating a heavy storm within your mind. You need some rest.",
+                        invite: currentLang === 'ko' ? "힘들었던 오늘, 당신을 조용히 달래줄 한 잔을 찾아드릴까요?" : "A tough day today, shall we find a drink to quietly comfort you?"
+                    };
+                } else {
+                    return {
+                        emoji: "🌓",
+                        label: currentLang === 'ko' ? "복잡미묘한 여운" : "Bittersweet Resonance",
+                        desc: currentLang === 'ko' ? "빛과 그림자가 공존하듯, 완전히 상반된 감정들이 교차하며 당신에게 깊고 복잡한 여운을 남기는 하루입니다." : "Like light and shadow coexisting, completely contrasting emotions intersect, leaving a deep and complex resonance.",
+                        invite: currentLang === 'ko' ? "이 오묘한 감정선에 깊이를 더해줄 한 잔, 같이 골라볼까요?" : "Shall we pick a drink to add depth to these subtle emotions?"
+                    };
+                }
+            };
+
             const calculateBiorhythm = (date, mbtiString) => {
                 const mbtiHash = mbtiString.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
                 const seed = date.getTime() + (mbtiHash * 100000);
@@ -948,7 +1050,7 @@
                         abvTarget: abvTarget,
                         analysis: analysis
                     });
-                    setStep(4);
+                    setStep(5);
                     setIsLoading(false);
                 }, 3000);
             };
@@ -983,7 +1085,7 @@
                         abvTarget: "Any",
                         analysis: analysis
                     });
-                    setStep(4);
+                    setStep(5);
                     setIsLoading(false);
                 }, 3000);
             };
@@ -1004,8 +1106,8 @@
                 }).join(', ');
                 
                 const summary = lang === 'ko'
-                    ? `${mbti} 성향의 내면적 탐구와 오늘의 ${moodString} 감정을 완벽하게 보완하기 위해 ${topWhiskey.style} 스타일이 당신의 선택이 되어야 합니다.`
-                    : `${topWhiskey.style} style perfectly complements your ${mbti} introspective nature and today's feeling of ${moodString}.`;
+                    ? `${mbti} 성향의 내면적 탐구와 오늘의 복합적인 감정 상태를 완벽하게 보완하기 위해 ${topWhiskey.style} 스타일이 당신의 선택이 되어야 합니다.`
+                    : `${topWhiskey.style} style perfectly complements your ${mbti} introspective nature and today's complex emotional state.`;
 
                 return { intro, summary };
             }, [result, lang, mbti, selectedMoods]);
@@ -1037,14 +1139,12 @@
                             </h1>
                         </div>
                         <div className="flex gap-2">
-                            {/* 언어 토글: 현재 언어가 ko면 EN을, en이면 KR을 표시하도록 수정 */}
                             <button 
                                 onClick={() => setLang(l => l === 'ko' ? 'en' : 'ko')} 
                                 className="px-3 py-1.5 text-xs font-bold rounded-full border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex justify-center items-center min-w-[46px]"
                             >
                                 {lang === 'ko' ? 'EN' : 'KR'}
                             </button>
-                            {/* 다크/라이트 모드 토글: 해/달 아이콘을 꽉 찬 스타일(fill-current)로 렌더링 */}
                             <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-300 flex justify-center items-center">
                                 <Icon name={isDarkMode ? "sun" : "moon"} className={`w-5 h-5 ${isDarkMode ? 'text-amber-400 fill-current' : 'text-slate-500 fill-current'}`} />
                             </button>
@@ -1111,34 +1211,35 @@
                         </div>
                     )}
 
-                    {/* Step 2: Mood Selection */}
+                    {/* Step 2: Expression Selection */}
                     {step === 2 && (
                         <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <header className="flex flex-col gap-1">
-                                <button onClick={() => setStep(1)} className="self-start text-slate-400 hover:text-slate-600 mb-2">
-                                    <Icon name="arrow-left" />
-                                </button>
                                 <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white">{t.step2_title}</h2>
                                 <p className="text-slate-500 dark:text-slate-400 text-sm">{t.step2_sub}</p>
                             </header>
                             
-                            <div className="grid grid-cols-1 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 {MOODS.map(mood => (
                                     <button 
-                                        key={mood.id}
+                                        key={`expr-${mood.id}`}
                                         onClick={() => handleMoodClick(mood.id)}
-                                        className={`p-4 rounded-2xl border-2 flex flex-row items-center gap-4 transition-all text-left ${
+                                        className={`overflow-hidden rounded-2xl border-2 flex flex-row items-stretch transition-all text-left min-h-[80px] ${
                                             selectedMoods.includes(mood.id) 
                                             ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/30 shadow-md ring-1 ring-teal-600/30' 
                                             : 'border-transparent bg-white dark:bg-slate-800 shadow-sm'
                                         }`}
                                     >
-                                        <div className={`p-3 rounded-full bg-white dark:bg-slate-700 shadow-sm shrink-0 relative w-14 h-14 flex items-center justify-center`}>
-                                            <span className="text-3xl">{mood.emoji}</span>
+                                        <div className={`w-20 shrink-0 flex items-center justify-center transition-colors ${
+                                            selectedMoods.includes(mood.id) ? 'bg-teal-100 dark:bg-teal-800/50' : 'bg-slate-50 dark:bg-slate-700/50'
+                                        }`}>
+                                            <span className="text-4xl sm:text-5xl drop-shadow-sm transition-transform group-hover:scale-110">{mood.emoji}</span>
                                         </div>
-                                        <span className={`text-base font-bold flex-1 ${selectedMoods.includes(mood.id) ? 'text-teal-900 dark:text-teal-100' : 'text-slate-600 dark:text-slate-400'}`}>
-                                            {mood.desc[lang]}
-                                        </span>
+                                        <div className="flex-1 p-3 sm:p-4 flex items-center">
+                                            <span className={`text-xs sm:text-sm font-bold leading-snug break-keep ${selectedMoods.includes(mood.id) ? 'text-teal-900 dark:text-teal-100' : 'text-slate-600 dark:text-slate-400'}`}>
+                                                {mood.expr[lang]}
+                                            </span>
+                                        </div>
                                     </button>
                                 ))}
                             </div>
@@ -1161,14 +1262,63 @@
                         </div>
                     )}
 
-                    {/* Step 3: Price Selection */}
+                    {/* Step 3: Mood Synthesis (Blended Mood) */}
                     {step === 3 && (
                         <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <header className="flex flex-col gap-1">
-                                <button onClick={() => setStep(2)} className="self-start text-slate-400 hover:text-slate-600 mb-2">
-                                    <Icon name="arrow-left" />
-                                </button>
+                            <header className="flex flex-col gap-1 text-center">
                                 <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white">{t.step3_title}</h2>
+                                <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">{t.step3_sub}</p>
+                            </header>
+                            
+                            <div className="flex flex-wrap justify-center gap-6 py-6">
+                                {(() => {
+                                    if (selectedMoods.length === 0) return null;
+                                    const blendedMood = getBlendedMood(selectedMoods, lang);
+
+                                    return (
+                                        <div className="flex flex-col items-center gap-4 p-8 bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-xl border border-teal-100 dark:border-slate-700 w-full max-w-sm">
+                                            <div className="text-[6rem] drop-shadow-lg mb-2 animate-in zoom-in duration-500 leading-none">
+                                                {blendedMood.emoji}
+                                            </div>
+                                            <span className="text-3xl font-black text-teal-900 dark:text-teal-100 text-center">
+                                                {blendedMood.label}
+                                            </span>
+                                            <span className="text-base text-slate-500 dark:text-slate-400 text-center font-medium leading-relaxed mt-2">
+                                                {blendedMood.desc}
+                                            </span>
+                                            <div className="mt-4 pt-5 border-t-2 border-dashed border-teal-100 dark:border-slate-700 w-full text-center">
+                                                <span className="text-lg font-extrabold text-teal-600 dark:text-teal-400">
+                                                    {blendedMood.invite}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
+                            </div>
+
+                            <div className="flex flex-col gap-3">
+                                <button 
+                                    onClick={() => setStep(4)} 
+                                    disabled={selectedMoods.length === 0}
+                                    className={`w-full py-4 rounded-2xl bg-teal-600 text-white font-bold text-lg shadow-xl shadow-teal-600/30 ${selectedMoods.length === 0 ? 'opacity-50 grayscale cursor-not-allowed' : 'hover:bg-teal-700'}`}
+                                >
+                                    {t.step_next}
+                                </button>
+                                <button 
+                                    onClick={() => setStep(2)}
+                                    className="w-full py-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-medium text-sm transition-colors"
+                                >
+                                    {t.step_prev}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Step 4: Price Selection */}
+                    {step === 4 && (
+                        <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <header className="flex flex-col gap-1">
+                                <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white">{t.step4_title}</h2>
                             </header>
                             
                             <div className="grid grid-cols-1 gap-3">
@@ -1203,7 +1353,7 @@
                                     {t.run_btn}
                                 </button>
                                 <button 
-                                    onClick={() => setStep(2)}
+                                    onClick={() => setStep(3)}
                                     className="w-full py-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-medium text-sm transition-colors"
                                 >
                                     {t.step_prev}
@@ -1213,7 +1363,7 @@
                     )}
 
                     {/* Result Page */}
-                    {step === 4 && result && (
+                    {step === 5 && result && (
                         <div className="w-full space-y-8 animate-in zoom-in-95 duration-700">
                             {/* Biorhythm Section */}
                             <section className="text-center">
