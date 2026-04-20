@@ -18,15 +18,26 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Pretendard:wght@300;400;500;600;700;800&display=swap');
         
+        :root {
+            --bg: #080604;
+            --card: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #c8962a;
+            --accent-dim: rgba(200, 150, 42, 0.15);
+            --text: #f8f8f8;
+            --text-dim: #888888;
+        }
+
         body {
             font-family: 'Pretendard', sans-serif;
-            background-color: #0f172a; /* slate-900 */
-            color: #f8fafc; /* slate-50 */
-            background-image: radial-gradient(ellipse at 50% -10%, rgba(13, 148, 136, 0.12) 0%, transparent 70%);
+            background-color: #0f172a; /* slate-900 fallback */
+            color: var(--text);
+            background-image: radial-gradient(ellipse at 50% -10%, rgba(13, 148, 136, 0.15) 0%, #080604 70%);
             min-height: 100vh;
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
             overscroll-behavior-y: none;
+            margin: 0;
         }
 
         .playfair { font-family: 'Playfair Display', serif; }
@@ -34,8 +45,10 @@
 
         @keyframes wave { 0%,100%{ ry:3 } 50%{ ry:5 } }
         @keyframes splash { 0%{ opacity:0.6; transform:translateY(0) } 100%{ opacity:0; transform:translateY(-8px) } }
+        @keyframes progress { 0% { width: 0%; } 100% { width: 100%; } }
+        .animate-progress { animation: progress 3s ease-in-out forwards; }
         
-        /* App Shell Styles */
+        /* App Shell Styles (iOS Native Feel) */
         .app-container {
             max-width: 440px;
             margin: 0 auto;
@@ -43,8 +56,9 @@
             display: flex;
             flex-direction: column;
             position: relative;
-            background-color: #0f172a;
-            box-shadow: 0 0 40px rgba(0,0,0,0.5);
+            background-color: var(--bg);
+            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+            overflow: hidden;
         }
 
         .bottom-nav {
@@ -52,31 +66,43 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(8, 6, 4, 0.88);
             backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(255,255,255,0.08);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
             display: flex;
             justify-content: space-around;
-            padding-bottom: env(safe-area-inset-bottom);
+            padding-bottom: calc(16px + env(safe-area-inset-bottom));
+            padding-top: 8px;
             z-index: 50;
         }
 
         .nav-item {
             flex: 1;
-            padding: 12px 0 16px 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 4px;
-            color: #64748b;
-            transition: color 0.3s;
+            color: var(--text-dim);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .nav-item.active { color: #14b8a6; }
+        .nav-item.active { 
+            color: #14b8a6; 
+            transform: translateY(-2px);
+        }
         
         .content-area {
             flex: 1;
-            padding: 24px 20px;
-            padding-bottom: 40px; /* space before nav */
+            padding: 16px 20px 40px 20px;
+            overflow-y: auto;
+        }
+
+        .glass-panel {
+            background: var(--card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
         }
     </style>
 </head>
@@ -86,7 +112,8 @@
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
 
-        // --- 1. Global Data Definitions ---
+        // --- 1. Global Data Definitions (Merged Core Logic) ---
+        
         const TEXT = {
             ko: {
                 title: "오늘의 위스키", onboard_title: "당신만의 위스키를 찾아보세요", onboard_sub: "성향과 바이오리듬을 분석해 완벽한 한 잔을 추천합니다.",
@@ -154,17 +181,44 @@
             { id: 5, label: { ko: "50만원 - 100만원", en: "₩500k - ₩1m" }, min: 500000, max: 1000000 }
         ];
 
+        // 33 Highly Curated Whiskies (Merged from all updates)
         const SPIRITS_DB = [
-            { name: "산토리 가쿠빈", nameEn: "Suntory Kakubin", age: "NAS", style: "Japanese Blend", tags: ["light", "crisp", "fresh", "clean", "standard"], abv: 40, archetype: ["ESFP", "ISFP", "ENFP"], priceKrw: 40000, priceRangeKrw: "35,000원 ~ 45,000원", priceUsd: 30, variants: [{vol: "700ml", price: 40000}], desc: "하이볼의 대명사. 가볍고 경쾌하여 탄산수나 레몬과 완벽한 조화를 이룹니다.", descEn: "The absolute standard for highballs. Light and crisp, blending perfectly with sparkling water." },
-            { name: "버팔로 트레이스", nameEn: "Buffalo Trace", age: "NAS", style: "Bourbon", tags: ["sweet", "vanilla", "oak", "balanced", "spicy"], abv: 45, archetype: ["ESTJ", "ENTJ", "ISTP"], priceKrw: 45000, priceRangeKrw: "40,000원 ~ 55,000원", priceUsd: 35, variants: [{vol: "750ml", price: 45000}], desc: "켄터키 버번의 교과서. 적절한 타격감과 달달한 바닐라, 스파이시함의 완벽한 밸런스.", descEn: "A textbook Kentucky bourbon. Perfect balance of punch, sweet vanilla, and spice." },
+            { name: "랭스 블렌디드 위스키", nameEn: "Langs Blended Whisky", age: "NAS", style: "Blended Scotch", tags: ["sweet", "light", "value", "standard"], abv: 40, archetype: ["ISTJ", "ISFJ", "ESTJ"], priceKrw: 15000, priceRangeKrw: "10,000원 ~ 20,000원", priceUsd: 12, variants: [{vol: "700ml", price: 15000}], desc: "[보틀벙커 TOP 2] 극강의 가성비. 하이볼로 탔을 때 가볍고 부드러운 단맛이 일품인 데일리 위스키.", descEn: "Extreme value. A daily whisky with a light, soft sweetness that shines in highballs." },
+            { name: "길리듀", nameEn: "Gillydhu", age: "NAS", style: "Blended Scotch", tags: ["light", "sweet", "value", "smooth"], abv: 40, archetype: ["ESFP", "ESTP"], priceKrw: 15000, priceRangeKrw: "10,000원 ~ 20,000원", priceUsd: 12, variants: [{vol: "700ml", price: 15000}], desc: "[데일리샷 TOP 3] 가격을 파괴하는 스코틀랜드 블렌디드. 편안한 목넘김과 카라멜 향을 선사합니다.", descEn: "A price-destroying Scottish blend. Offers comfortable drinking with caramel notes." },
+            { name: "존바 리저브", nameEn: "John Barr Reserve", age: "NAS", style: "Blended Scotch", tags: ["smooth", "sweet", "value", "mellow"], abv: 40, archetype: ["ISFJ", "ESFJ"], priceKrw: 20000, priceRangeKrw: "15,000원 ~ 25,000원", priceUsd: 15, variants: [{vol: "700ml", price: 20000}], desc: "[보틀벙커 TOP 10] 검은병의 가성비. 조니워커의 대항마로 불리는 부드럽고 균형 잡힌 맛.", descEn: "The value in a black bottle. A smooth and balanced rival to Johnnie Walker." },
+            { name: "그란츠 트리플우드", nameEn: "Grant's Triple Wood", age: "NAS", style: "Blended Scotch", tags: ["vanilla", "sweet", "mellow", "value"], abv: 40, archetype: ["ISFP", "INFP"], priceKrw: 22000, priceRangeKrw: "15,000원 ~ 25,000원", priceUsd: 18, variants: [{vol: "700ml", price: 22000}], desc: "[보틀벙커 TOP 6] 세 가지 오크통에서 숙성되어 바닐라와 달콤한 과일 향이 복합적으로 어우러집니다.", descEn: "Aged in three woods, offering a complex blend of vanilla and sweet fruit flavors." },
+            { name: "골든블루 쿼츠", nameEn: "Golden Blue Quartz", age: "NAS", style: "Korean Blended", tags: ["smooth", "mellow", "light", "clean"], abv: 36.5, archetype: ["ESFJ", "ENFJ", "ISFP"], priceKrw: 25000, priceRangeKrw: "20,000원 ~ 30,000원", priceUsd: 20, variants: [{vol: "700ml", price: 25000}], desc: "[보틀벙커 TOP 8] 36.5도의 저도수로 알코올 부담 없이 깔끔하고 부드럽게 넘어가는 한국형 위스키.", descEn: "A smooth 36.5% ABV Korean-style whisky, designed for easy drinking without harsh burn." },
+            { name: "짐빔 화이트", nameEn: "Jim Beam White Label", age: "NAS", style: "Standard Bourbon", tags: ["sweet", "vanilla", "corn", "light"], abv: 40, archetype: ["ESFP", "ESTP"], priceKrw: 24000, priceRangeKrw: "24,000원 ~ 30,000원", priceUsd: 18, variants: [{vol: "700ml", price: 24000}], desc: "전 세계 판매 1위 버번. 가볍고 달콤한 바닐라 향의 하이볼 치트키.", descEn: "World's No.1 Bourbon. Light and sweet vanilla notes perfect for highballs." },
+            { name: "에반 윌리엄스 블랙", nameEn: "Evan Williams Black", age: "NAS", style: "Bourbon", tags: ["sweet", "vanilla", "caramel", "value", "standard"], abv: 43, archetype: ["ESTJ", "ESTP", "ESFP"], priceKrw: 30000, priceRangeKrw: "30,000원대", priceUsd: 20, variants: [{vol: "750ml", price: 30000}], desc: "4~5년 숙성으로 풍성하고 촘촘한 맛을 자랑하는 가성비 끝판왕 아메리칸 버번.", descEn: "Highly cost-effective bourbon aged 4-5 years with typical vanilla and caramel notes." },
+            { name: "제임슨 스탠다드", nameEn: "Jameson Irish Whiskey", age: "NAS", style: "Irish Blend", tags: ["smooth", "light", "floral", "classic"], abv: 40, archetype: ["ESFJ", "ISFJ"], priceKrw: 27000, priceRangeKrw: "27,000원 ~ 35,000원", priceUsd: 25, variants: [{vol: "700ml", price: 27000}], desc: "3번 증류하여 극도로 부드러운 목넘김. 호불호 없는 데일리 위스키.", descEn: "Triple distilled for ultimate smoothness. An approachable daily dram." },
+            { name: "잭다니엘스 넘버 7", nameEn: "Jack Daniel's Old No.7", age: "NAS", style: "Tennessee Whiskey", tags: ["sweet", "vanilla", "classic", "mellow", "smooth"], abv: 40, archetype: ["ESTP", "ESFP", "ENTP"], priceKrw: 35000, priceRangeKrw: "30,000원 ~ 45,000원", priceUsd: 28, variants: [{vol: "700ml", price: 35000}], desc: "[주류상회Be TOP 4] 달콤한 카라멜과 부드러운 목넘김. 콜라와 함께하는 '잭콕'의 영원한 주인공.", descEn: "Sweet caramel and smooth finish. The eternal star of the classic 'Jack and Coke'." },
+            { name: "조니워커 블랙라벨", nameEn: "Johnnie Walker Black Label", age: "12년", style: "Blended Scotch", tags: ["smoky", "balanced", "fruit", "classic"], abv: 40, archetype: ["ENTJ", "INTJ"], priceKrw: 39000, priceRangeKrw: "39,000원 ~ 48,000원", priceUsd: 30, variants: [{vol: "700ml", price: 39000}], desc: "스모키와 과일의 완벽한 균형. 하이볼, 니트 어디에나 어울리는 교과서적 위스키.", descEn: "Perfect balance of smoke and fruit. The textbook blended scotch." },
+            { name: "산토리 가쿠빈", nameEn: "Suntory Kakubin", age: "NAS", style: "Japanese Blend", tags: ["light", "crisp", "fresh", "clean", "standard"], abv: 40, archetype: ["ESFP", "ISFP", "ENFP"], priceKrw: 40000, priceRangeKrw: "35,000원 ~ 45,000원", priceUsd: 30, variants: [{vol: "700ml", price: 40000}], desc: "[보틀벙커 TOP 1] 하이볼의 대명사. 가볍고 경쾌하여 탄산수나 레몬과 완벽한 조화를 이룹니다.", descEn: "The absolute standard for highballs. Light and crisp, blending perfectly with sparkling water." },
+            { name: "버팔로 트레이스", nameEn: "Buffalo Trace", age: "NAS", style: "Bourbon", tags: ["sweet", "vanilla", "oak", "balanced", "spicy"], abv: 45, archetype: ["ESTJ", "ENTJ", "ISTP"], priceKrw: 45000, priceRangeKrw: "40,000원 ~ 55,000원", priceUsd: 35, variants: [{vol: "750ml", price: 45000}], desc: "[데일리샷 TOP 5] 켄터키 버번의 교과서. 적절한 타격감과 달달한 바닐라, 스파이시함의 완벽한 밸런스.", descEn: "A textbook Kentucky bourbon. Perfect balance of punch, sweet vanilla, and spice." },
             { name: "몽키숄더", nameEn: "Monkey Shoulder", age: "NAS", style: "Blended Malt", tags: ["vanilla", "orange", "creamy", "fresh"], abv: 40, archetype: ["ESFP", "ENFP"], priceKrw: 42000, priceRangeKrw: "42,000원 ~ 52,000원", priceUsd: 32, variants: [{vol: "700ml", price: 42000}], desc: "몰트 100% 블렌딩. 부드럽고 향긋하여 매운 음식과도 훌륭한 조화를 이룹니다.", descEn: "100% Malt blend. Sweet and creamy with notes of vanilla and orange." },
+            { name: "와일드터키 101 8년", nameEn: "Wild Turkey 101 8 Year", age: "8년", style: "High Rye Bourbon", tags: ["spicy", "vanilla", "oak", "bold"], abv: 50.5, archetype: ["ESTP", "ENTP"], priceKrw: 42000, priceRangeKrw: "42,000원 ~ 50,000원", priceUsd: 25, variants: [{vol: "700ml", price: 42000}], desc: "101 프루프(50.5도)의 화끈한 펀치. 거친 알코올 향을 멋지게 잡아주는 묵직한 버번.", descEn: "101 Proof kick with 8 years of aging. The definitive bold bourbon." },
+            
+            { name: "와일드터키 레어브리드", nameEn: "Wild Turkey Rare Breed", age: "NAS", style: "Barrel Proof Bourbon", tags: ["spicy", "caramel", "bold", "cask_strength"], abv: 58.4, archetype: ["ENTJ", "ESTJ"], priceKrw: 80000, priceRangeKrw: "80,000원 ~ 95,000원", priceUsd: 50, variants: [{vol: "750ml", price: 80000}], desc: "[주류상회Be TOP 7] 물 타지 않은 야수의 심장. 58.4도의 강렬하고 진득한 카라멜 폭탄.", descEn: "Undiluted intensity. A 58.4% caramel bomb with a beastly heart." },
+            { name: "벤리악 12년", nameEn: "Benriach 12 Year", age: "12년", style: "Speyside Single Malt", tags: ["fruity", "honey", "smooth", "rich", "sherry"], abv: 46, archetype: ["ENFP", "INFJ", "ENFJ"], priceKrw: 90000, priceRangeKrw: "80,000원 ~ 100,000원", priceUsd: 65, variants: [{vol: "700ml", price: 90000}], desc: "[주류상회Be TOP 6] 셰리, 버번, 포트 세 가지 캐스크 숙성이 주는 구운 과일과 꿀의 풍성한 하모니.", descEn: "Three cask maturation brings a rich harmony of baked fruits and honey." },
             { name: "탈리스커 10년", nameEn: "Talisker 10 Year", age: "10년", style: "Island Single Malt", tags: ["smoky", "peppery", "maritime", "salty"], abv: 45.8, archetype: ["ISTP", "ENTP"], priceKrw: 69000, priceRangeKrw: "69,000원 ~ 82,000원", priceUsd: 60, variants: [{vol: "700ml", price: 69000}], desc: "거친 바다 앞에서 빚어진 피트 위스키의 교과서. 굴이나 해산물과 훌륭한 페어링.", descEn: "Sea salt and peppery spice. Truly 'Made by the Sea'." },
-            { name: "맥캘란 12년 더블 캐스크", nameEn: "Macallan 12 Year Double Cask", age: "12년", style: "Double Cask", tags: ["honey", "vanilla", "oak", "balanced", "smooth"], abv: 40, archetype: ["ESTJ", "ISFJ", "ENFJ"], priceKrw: 120000, priceRangeKrw: "110,000원 ~ 135,000원", priceUsd: 85, variants: [{vol: "700ml", price: 120000}], desc: "아메리칸 오크의 꿀, 바닐라 향과 유러피안 오크의 스파이스가 완벽한 조화를 이룹니다.", descEn: "A perfect harmony of American oak's honey/vanilla and European oak's spice." },
-            { name: "발베니 12년 더블우드", nameEn: "Balvenie 12Y DoubleWood", age: "12년", style: "Balanced Malt", tags: ["honey", "nutty", "mellow", "smooth"], abv: 40, archetype: ["ISFP", "INTP"], priceKrw: 115000, priceRangeKrw: "115,000원 ~ 135,000원", priceUsd: 75, variants: [{vol: "700ml", price: 115000}], desc: "두 가지 오크통 숙성으로 완성된 꿀과 견과류의 정석적인 맛. 독보적인 판매량을 자랑합니다.", descEn: "Honey and nuts perfected by maturation in two types of oak. Boasts unrivaled sales." },
-            { name: "조니워커 블루라벨", nameEn: "Johnnie Walker Blue Label", age: "NAS", style: "Premium Blend", tags: ["balanced", "smoke", "velvet", "rich"], abv: 40, archetype: ["ENTJ", "ENFJ"], priceKrw: 240000, priceRangeKrw: "240,000원 ~ 310,000원", priceUsd: 200, variants: [{vol: "750ml", price: 240000}], desc: "1만 개 중 하나의 오크통. 비단결 같은 목넘김을 자랑하는 블렌디드의 끝판왕.", descEn: "One in ten thousand casks. The velvety pinnacle of blended whisky." }
+            { name: "조니워커 그린라벨", nameEn: "Johnnie Walker Green Label", age: "15년", style: "Blended Malt", tags: ["smoky", "peppery", "balanced", "complex", "maritime"], abv: 43, archetype: ["INTJ", "INTP", "ISTP"], priceKrw: 95000, priceRangeKrw: "85,000원 ~ 110,000원", priceUsd: 70, variants: [{vol: "700ml", price: 95000}], desc: "[보틀벙커 TOP 7] 싱글 몰트만으로 블렌딩한 15년 숙성 위스키. 숲의 향기와 스모키함이 오묘하게 섞여있습니다.", descEn: "A 15YO blended malt bridging earthy forest notes and subtle maritime smoke." },
+            { name: "네이키드 몰트", nameEn: "Naked Malt", age: "NAS", style: "Blended Malt", tags: ["sweet", "fruity", "sherry", "rich"], abv: 40, archetype: ["ESFP", "ESTP"], priceKrw: 60000, priceRangeKrw: "60,000원대", priceUsd: 45, variants: [{vol: "700ml", price: 60000}], desc: "[데일리샷 TOP 8] 유명 싱글몰트를 블렌딩해 셰리 캐스크에 추가 숙성. 건포도 풍미가 일품.", descEn: "Extra matured in sherry casks. Raisin and dried fruit flavors make it great for BBQs." },
+            { name: "더 글렌리벳 12년", nameEn: "The Glenlivet 12 Years Old", age: "12년", style: "Speyside Single Malt", tags: ["fruity", "fresh", "smooth", "balanced"], abv: 40, archetype: ["ENFJ", "ESFJ"], priceKrw: 90000, priceRangeKrw: "80,000원 ~ 90,000원", priceUsd: 65, variants: [{vol: "700ml", price: 90000}], desc: "[데일리샷 TOP 2] 휴양지로 떠나고 싶은 싱그러움. 잘 익은 파인애플과 사과의 부드럽고 달콤한 풍미.", descEn: "Fresh ripe pineapple and apple notes. It brings the urge to escape to a resort." },
+
+            { name: "글렌드로낙 12년", nameEn: "Glendronach 12 Year", age: "12년", style: "Sherry Cask", tags: ["sherry", "sweet", "rich", "chocolate", "fruity"], abv: 43, archetype: ["INFJ", "ISFJ"], priceKrw: 105000, priceRangeKrw: "95,000원 ~ 120,000원", priceUsd: 75, variants: [{vol: "700ml", price: 105000}], desc: "[주류상회Be TOP 3] 진득한 셰리의 대명사. 다크 초콜릿과 구운 과일의 달콤함이 압도적인 인기를 자랑합니다.", descEn: "The synonym for rich sherry. Boasts overwhelming popularity with notes of dark chocolate and baked fruit." },
+            { name: "맥캘란 12년 더블 캐스크", nameEn: "Macallan 12 Year Double Cask", age: "12년", style: "Double Cask", tags: ["honey", "vanilla", "oak", "balanced", "smooth"], abv: 40, archetype: ["ESTJ", "ISFJ", "ENFJ"], priceKrw: 120000, priceRangeKrw: "110,000원 ~ 135,000원", priceUsd: 85, variants: [{vol: "700ml", price: 120000}], desc: "[데일리샷 TOP 6] 아메리칸 오크의 꿀, 바닐라 향과 유러피안 오크의 스파이스가 완벽한 조화를 이룹니다.", descEn: "A perfect harmony of American oak's honey/vanilla and European oak's spice." },
+            { name: "로얄 브라클라 12년", nameEn: "Royal Brackla 12 Year", age: "12년", style: "Highland Single Malt", tags: ["sherry", "rich", "elegant", "smooth"], abv: 46, archetype: ["ENFJ", "ESFJ"], priceKrw: 110000, priceRangeKrw: "100,000원 ~ 125,000원", priceUsd: 80, variants: [{vol: "700ml", price: 110000}], desc: "[주류상회Be TOP 10] '왕의 위스키'라 불리는 기품. 올로로소 셰리 피니쉬로 우아하고 풍성한 향을 냅니다.", descEn: "The 'King's Own Whisky'. Oloroso sherry finish gives it an elegant and rich aroma." },
+            { name: "라가불린 16년", nameEn: "Lagavulin 16 Year", age: "16년", style: "Peated Islay", tags: ["smoky", "seaweed", "intense", "rich"], abv: 43, archetype: ["INTJ", "INFJ"], priceKrw: 135000, priceRangeKrw: "135,000원 ~ 160,000원", priceUsd: 100, variants: [{vol: "700ml", price: 135000}], desc: "아일라의 제왕. 강렬한 피트와 셰리의 조화가 주는 중후한 매력.", descEn: "The King of Islay. A profound harmony of intense peat and sherry." },
+            { name: "글렌피딕 15년", nameEn: "Glenfiddich 15 Year", age: "15년", style: "Solera Reserve", tags: ["honey", "vanilla", "balanced", "sweet"], abv: 40, archetype: ["ENFJ", "INFP"], priceKrw: 115000, priceRangeKrw: "110,000원 ~ 125,000원", priceUsd: 70, variants: [{vol: "700ml", price: 115000}], desc: "첫 맛은 강렬하지만 구수하고 그리운 여운을 남깁니다. 꿀처럼 달콤한 밸런스.", descEn: "Intense start but leaves a nostalgic, honey-sweet smooth balance." },
+            { name: "발베니 12년 더블우드", nameEn: "Balvenie 12Y DoubleWood", age: "12년", style: "Balanced Malt", tags: ["honey", "nutty", "mellow", "smooth"], abv: 40, archetype: ["ISFP", "INTP"], priceKrw: 115000, priceRangeKrw: "115,000원 ~ 135,000원", priceUsd: 75, variants: [{vol: "700ml", price: 115000}], desc: "[데일리샷 TOP 1] 두 가지 오크통 숙성으로 완성된 꿀과 견과류의 정석적인 맛. 독보적인 판매량을 자랑합니다.", descEn: "Honey and nuts perfected by maturation in two types of oak. Boasts unrivaled sales." },
+            { name: "아드벡 코리브레칸", nameEn: "Ardbeg Corryvreckan", age: "NAS", style: "High Vol Peat", tags: ["smoky", "medicinal", "citrus", "intense", "cask_strength"], abv: 57.1, archetype: ["INTJ", "ISTJ"], priceKrw: 165000, priceRangeKrw: "165,000원 ~ 190,000원", priceUsd: 120, variants: [{vol: "700ml", price: 165000}], desc: "소용돌이치는 강렬한 피트와 스파이스. 피트 마니아의 도전 과제.", descEn: "Swirling intense peat and spice. A challenge for peat lovers." },
+            
+            { name: "조니워커 블루라벨", nameEn: "Johnnie Walker Blue Label", age: "NAS", style: "Premium Blend", tags: ["balanced", "smoke", "velvet", "rich"], abv: 40, archetype: ["ENTJ", "ENFJ"], priceKrw: 240000, priceRangeKrw: "240,000원 ~ 310,000원", priceUsd: 200, variants: [{vol: "750ml", price: 240000}], desc: "[데일리샷 TOP 4] 1만 개 중 하나의 오크통. 비단결 같은 목넘김을 자랑하는 블렌디드의 끝판왕.", descEn: "One in ten thousand casks. The velvety pinnacle of blended whisky." },
+            { name: "야마자키 12년", nameEn: "Yamazaki 12 Year", age: "12년", style: "Japanese Single Malt", tags: ["floral", "fruit", "spice", "mizunara"], abv: 43, archetype: ["ISFJ", "ISTJ"], priceKrw: 290000, priceRangeKrw: "290,000원 ~ 450,000원", priceUsd: 180, variants: [{vol: "700ml", price: 290000}], desc: "일본 위스키의 전설. 미즈나라 오크의 신비로운 향나무 풍미.", descEn: "Japanese legend. Mysterious incense notes from Mizunara oak." },
+            { name: "로얄살루트 21년", nameEn: "Royal Salute 21 Year", age: "21년", style: "Royal Blend", tags: ["smooth", "sweet", "floral", "classic"], abv: 40, archetype: ["ESTJ", "ESFJ"], priceKrw: 200000, priceRangeKrw: "200,000원 ~ 260,000원", priceUsd: 160, variants: [{vol: "700ml", price: 210000}], desc: "[주류상회Be TOP 9] 여왕을 위한 술. 도자기 병에 담긴 부드러움의 극치.", descEn: "Fit for a Queen. Ultimate smoothness in a porcelain flagon." }
         ];
 
-        // --- Shared Logic ---
+        // --- Helper Logic for Blending & Processing ---
         const getWhiskyDetails = (w) => {
              const fallbackColor = w.style.includes('Bourbon') ? '#d97706' : w.style.includes('Sherry') ? '#78350f' : w.tags.includes('smoky') ? '#b45309' : '#92400e';
              const flavor = {
@@ -201,7 +255,21 @@
             else return { emoji: "🌓", label: currentLang === 'ko' ? "복잡미묘한 여운" : "Bittersweet Resonance", desc: currentLang === 'ko' ? "상반된 감정들이 교차하며 깊고 복잡한 여운을 남깁니다." : "Contrasting emotions intersect.", invite: currentLang === 'ko' ? "이 감정선에 깊이를 더해줄 한 잔, 골라볼까요?" : "A drink to add depth to these emotions?" };
         };
 
-        // --- 2. Shared UI Components ---
+        // --- 2. UI Components (Premium V2 Theme) ---
+        const IOSStatusBar = () => {
+            const time = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: false });
+            return (
+                <div className="flex justify-between items-center px-6 pt-3 pb-2 w-full absolute top-0 z-50 pointer-events-none">
+                    <span className="text-white text-[15px] font-bold tracking-tight">{time}</span>
+                    <div className="flex items-center gap-1.5 opacity-80">
+                        <svg width="17" height="11" viewBox="0 0 17 11" fill="white"><path d="M12.08 3.51C12.08 3.51 13.56 1.94 16.27 1.94C16.82 1.94 17 2.37 17 2.65C17 2.92 16.71 3.2 16.43 3.39C14.39 4.8 13.2 6.84 13.2 9.1C13.2 9.53 12.82 9.9 12.4 9.9H11.76C11.34 9.9 10.96 9.53 10.96 9.1C10.96 6.84 9.77 4.8 7.73 3.39C7.45 3.2 7.16 2.92 7.16 2.65C7.16 2.37 7.34 1.94 7.89 1.94C10.6 1.94 12.08 3.51 12.08 3.51Z"/><path d="M8.45 6.78C8.45 6.78 9.5 5.56 11.43 5.56C11.83 5.56 12.04 5.86 12.04 6.06C12.04 6.26 11.84 6.46 11.64 6.6C10.15 7.6 9.3 9.07 9.3 10.7C9.3 11.01 9.02 11.28 8.7 11.28H8.2C7.88 11.28 7.6 11.01 7.6 10.7C7.6 9.07 6.75 7.6 5.26 6.6C5.06 6.46 4.86 6.26 4.86 6.06C4.86 5.86 5.07 5.56 5.47 5.56C7.4 5.56 8.45 6.78 8.45 6.78Z"/><circle cx="8.45" cy="9.8" r="1.5" fill="white"/></svg>
+                        <svg width="15" height="11" viewBox="0 0 15 11" fill="white"><path d="M1 11H14C14.55 11 15 10.55 15 10V1C15 0.45 14.55 0 14 0H1C0.45 0 0 0.45 0 1V10C0 10.55 0.45 11 1 11ZM2 2H13V9H2V2Z"/></svg>
+                        <svg width="24" height="12" viewBox="0 0 24 12" fill="white"><rect x="1" y="1" width="20" height="10" rx="3" stroke="white" strokeWidth="1" fill="none"/><rect x="3" y="3" width="16" height="6" rx="1.5"/><path d="M23 4V8C23.55 8 24 7.55 24 7V5C24 4.45 23.55 4 23 4Z"/></svg>
+                    </div>
+                </div>
+            );
+        };
+
         const Icon = ({ name, className = "" }) => {
             const ref = useRef(null);
             useEffect(() => { if (window.lucide && ref.current) { ref.current.innerHTML = `<i data-lucide="${name}"></i>`; window.lucide.createIcons({ root: ref.current, nameAttr: 'data-lucide', attrs: { class: className } }); } }, [name, className]);
@@ -209,7 +277,7 @@
         };
 
         const GlassCard = ({ children, className = "" }) => (
-            <div className={`bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-xl ${className}`}>{children}</div>
+            <div className={`glass-panel shadow-2xl ${className}`}>{children}</div>
         );
 
         const FlavorBars = ({ flavor, lang }) => {
@@ -218,8 +286,8 @@
                 <div className="flex flex-col gap-3">
                     {Object.entries(flavor).map(([k,v]) => (
                         <div key={k}>
-                            <div className="flex justify-between mb-1"><span className="text-slate-400 text-xs font-medium">{lang==='en' ? labels[k].en : labels[k].ko}</span><span className="text-teal-400 text-xs font-mono font-bold playfair">{v}</span></div>
-                            <div className="h-1.5 bg-slate-700/50 rounded-full overflow-hidden"><div className="h-full rounded-full bg-gradient-to-r from-teal-500/50 to-teal-500" style={{ width: `${v}%`, transition: 'width 1.2s cubic-bezier(0.22,1,0.36,1)' }} /></div>
+                            <div className="flex justify-between mb-1"><span className="text-slate-400 text-xs font-medium">{lang==='en' ? labels[k].en : labels[k].ko}</span><span className="text-[#c8962a] text-xs font-mono font-bold playfair">{v}</span></div>
+                            <div className="h-1.5 bg-slate-700/50 rounded-full overflow-hidden"><div className="h-full rounded-full bg-gradient-to-r from-[#c8962a]/50 to-[#c8962a]" style={{ width: `${v}%`, transition: 'width 1.2s cubic-bezier(0.22,1,0.36,1)' }} /></div>
                         </div>
                     ))}
                 </div>
@@ -242,9 +310,9 @@
 
             return (
                 <div>
-                    <div className="bg-black/20 rounded-2xl p-4 mb-4 border border-white/5 relative overflow-hidden">
+                    <div className="bg-black/40 rounded-2xl p-4 mb-4 border border-white/5 relative overflow-hidden">
                         <div className="text-[10px] text-slate-500 mb-2 flex justify-between relative z-10">
-                            <span>← 14일 전</span><span className="text-teal-400 font-bold">오늘</span><span>7일 후 →</span>
+                            <span>← 14일 전</span><span className="text-[#c8962a] font-bold">오늘</span><span>7일 후 →</span>
                         </div>
                         <svg width="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
                             <line x1="0" y1={H/2} x2={W} y2={H/2} stroke="rgba(255,255,255,0.1)" strokeWidth="1"/>
@@ -285,7 +353,7 @@
 
             const liquidY = 93 - (fill / 100) * 75;
             return (
-                <div className="relative inline-block">
+                <div className="relative inline-block mt-4">
                     <svg width="180" height="150" viewBox="0 0 180 150" fill="none">
                         <defs>
                             <linearGradient id="glassBodyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -333,16 +401,16 @@
                 const W = 800, H = 1000;
                 canvasRef.current.width = W; canvasRef.current.height = H;
                 const bg = ctx.createRadialGradient(W/2, H*0.2, 0, W/2, H*0.2, W*0.8);
-                bg.addColorStop(0, '#1e293b'); bg.addColorStop(1, '#0f172a');
+                bg.addColorStop(0, '#1e293b'); bg.addColorStop(1, '#080604');
                 ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
                 const glow = ctx.createRadialGradient(W/2, 200, 0, W/2, 200, 350);
                 glow.addColorStop(0, w.color + '50'); glow.addColorStop(1, 'transparent');
                 ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
-                ctx.fillStyle = '#0d9488'; ctx.fillRect(0, 0, W, 6);
+                ctx.fillStyle = '#c8962a'; ctx.fillRect(0, 0, W, 6);
                 
-                ctx.fillStyle = '#0d9488'; ctx.font = '500 20px sans-serif'; ctx.letterSpacing = '8px';
+                ctx.fillStyle = '#c8962a'; ctx.font = '500 20px sans-serif'; ctx.letterSpacing = '8px';
                 ctx.fillText('WHISKY × MBTI', W/2 - ctx.measureText('WHISKY × MBTI').width/2, 55);
-                ctx.fillStyle = '#14b8a6'; ctx.font = 'bold 110px serif'; ctx.textAlign = 'center'; ctx.fillText(mbti, W/2, 220);
+                ctx.fillStyle = '#f8f8f8'; ctx.font = 'bold 110px serif'; ctx.textAlign = 'center'; ctx.fillText(mbti, W/2, 220);
                 ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.font = '400 30px sans-serif'; ctx.fillText(result.blendedMood?.label || 'Daily Pick', W/2, 275);
                 ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.beginPath(); ctx.moveTo(W*0.2, 320); ctx.lineTo(W*0.8, 320); ctx.stroke();
                 ctx.fillStyle = '#ffffff'; ctx.font = 'bold 46px serif'; ctx.fillText(lang==='ko'?w.name:w.nameEn, W/2, 400);
@@ -351,8 +419,8 @@
                 let tagX = W/2 - (w.tags.length * 130)/2 + 65;
                 w.tags.forEach(t => {
                     const tw = ctx.measureText('#' + t).width + 30;
-                    ctx.fillStyle = 'rgba(20,184,166,0.15)'; ctx.beginPath(); ctx.roundRect(tagX - tw/2, 470, tw, 36, 18); ctx.fill();
-                    ctx.fillStyle = '#14b8a6'; ctx.font = '400 20px sans-serif'; ctx.fillText('#' + t, tagX, 495);
+                    ctx.fillStyle = 'rgba(200,150,42,0.15)'; ctx.beginPath(); ctx.roundRect(tagX - tw/2, 470, tw, 36, 18); ctx.fill();
+                    ctx.fillStyle = '#c8962a'; ctx.font = '400 20px sans-serif'; ctx.fillText('#' + t, tagX, 495);
                     tagX += 140;
                 });
             }, [result, lang]);
@@ -369,8 +437,24 @@
                     <div className="bg-slate-900 border border-slate-700 rounded-3xl p-5 w-full max-w-sm flex flex-col gap-4" onClick={e=>e.stopPropagation()}>
                         <div className="flex justify-between items-center text-white"><span className="font-bold">Share Card</span><button onClick={onClose} className="text-slate-400 text-2xl">&times;</button></div>
                         <div className="rounded-xl overflow-hidden border border-slate-700"><canvas ref={canvasRef} className="w-full h-auto block" /></div>
-                        <button onClick={copy} className={`py-4 rounded-xl font-bold transition-all ${copied ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-teal-600 text-white'}`}>{copied ? '✓ 클립보드에 복사됨' : '📋 이미지 복사 및 저장'}</button>
+                        <button onClick={copy} className={`py-4 rounded-xl font-bold transition-all ${copied ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-[#c8962a] text-white'}`}>{copied ? '✓ 클립보드에 복사됨' : '📋 이미지 복사 및 저장'}</button>
                     </div>
+                </div>
+            );
+        };
+
+        const LoadingScreen = ({ lang }) => {
+            const [msg, setMsg] = useState(0);
+            const msgs = ["MBTI 성향 분석 중...", "바이오리듬 데이터 연산 중...", "행동경제학 메커니즘 분석 중...", "인지적 판단 편향 확인 중...", "당신을 위한 완벽한 한 잔 준비 중..."];
+            useEffect(() => { const int = setInterval(() => setMsg(p => (p + 1) % msgs.length), 600); return () => clearInterval(int); }, []);
+            return (
+                <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center animate-in fade-in">
+                    <div className="relative mb-10">
+                        <div className="absolute inset-0 bg-[#c8962a] rounded-full blur-xl opacity-20 animate-pulse"></div>
+                        <div className="relative p-6 bg-slate-800 rounded-full shadow-2xl border border-slate-700"><Icon name="loader-2" className="w-12 h-12 text-[#c8962a] animate-spin" /></div>
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2 min-h-[28px]">{msgs[msg]}</h3>
+                    <div className="w-64 h-1.5 bg-slate-800 rounded-full mt-4 overflow-hidden"><div className="h-full bg-[#c8962a] animate-progress rounded-full"></div></div>
                 </div>
             );
         };
@@ -378,30 +462,30 @@
         // --- 3. Screens ---
         
         const Splash = ({ onFinish }) => {
-            useEffect(() => { setTimeout(onFinish, 2000); }, []);
+            useEffect(() => { setTimeout(onFinish, 2500); }, []);
             return (
-                <div className="flex flex-col items-center justify-center h-full animate-in fade-in duration-1000">
-                    <div className="text-6xl mb-6 animate-bounce">🥃</div>
+                <div className="flex flex-col items-center justify-center h-full pt-20 animate-in fade-in duration-1000">
+                    <div className="text-7xl mb-6 animate-bounce">🥃</div>
                     <h1 className="text-3xl font-black text-white playfair tracking-widest mb-2">WHISKY MBTI</h1>
-                    <p className="text-teal-400 text-sm font-medium tracking-widest uppercase">Curated just for you</p>
+                    <p className="text-[#c8962a] text-sm font-medium tracking-widest uppercase">Curated just for you</p>
                 </div>
             );
         };
 
         const Onboarding = ({ onStartQuiz, onDirectSelect, lang, setLang }) => (
-            <div className="flex flex-col h-full p-6 animate-in slide-in-from-bottom-8 duration-500">
-                <div className="flex justify-end mb-8">
+            <div className="flex flex-col h-full pt-16 p-6 animate-in slide-in-from-bottom-8 duration-500">
+                <div className="flex justify-end mb-8 relative z-10">
                     <button onClick={() => setLang(l => l==='ko'?'en':'ko')} className="px-3 py-1.5 text-xs font-bold rounded-full border border-slate-700 bg-slate-800/50 text-slate-300">{lang==='ko'?'EN':'KR'}</button>
                 </div>
                 <div className="flex-1 flex flex-col justify-center items-center text-center">
-                    <div className="w-24 h-24 bg-teal-900/30 rounded-full flex items-center justify-center mb-8 border border-teal-500/20">
-                        <Icon name="compass" className="w-10 h-10 text-teal-400" />
+                    <div className="w-24 h-24 bg-[#c8962a]/10 rounded-full flex items-center justify-center mb-8 border border-[#c8962a]/20">
+                        <Icon name="compass" className="w-10 h-10 text-[#c8962a]" />
                     </div>
                     <h2 className="text-3xl font-black text-white mb-4 leading-tight">{TEXT[lang].onboard_title}</h2>
                     <p className="text-slate-400 text-base leading-relaxed mb-12">{TEXT[lang].onboard_sub}</p>
                 </div>
                 <div className="flex flex-col gap-3 pb-8">
-                    <button onClick={onStartQuiz} className="w-full py-4 rounded-2xl bg-teal-600 text-white font-bold text-lg shadow-xl shadow-teal-900/50 hover:bg-teal-500 transition-colors">{TEXT[lang].start_quiz}</button>
+                    <button onClick={onStartQuiz} className="w-full py-4 rounded-2xl bg-[#c8962a] text-white font-bold text-lg shadow-xl shadow-[#c8962a]/30 hover:bg-[#a67c20] transition-colors">{TEXT[lang].start_quiz}</button>
                     <button onClick={onDirectSelect} className="w-full py-4 rounded-2xl border border-slate-700 text-slate-300 font-bold hover:bg-slate-800 transition-colors">{TEXT[lang].skip_quiz}</button>
                 </div>
             </div>
@@ -423,16 +507,16 @@
             };
 
             return (
-                <div className="flex flex-col h-full p-6 animate-in slide-in-from-right-8">
+                <div className="flex flex-col h-full pt-16 p-6 animate-in slide-in-from-right-8">
                     <div className="w-full h-2 bg-slate-800 rounded-full mb-8 overflow-hidden">
-                        <div className="h-full bg-teal-500 transition-all duration-300" style={{ width: `${((qIdx+1)/QUIZ_QUESTIONS.length)*100}%` }}></div>
+                        <div className="h-full bg-[#c8962a] transition-all duration-300" style={{ width: `${((qIdx+1)/QUIZ_QUESTIONS.length)*100}%` }}></div>
                     </div>
-                    <div className="flex-1 flex flex-col justify-center">
-                        <span className="text-teal-500 font-bold text-sm mb-4">Q{qIdx+1}.</span>
+                    <div className="flex-1 flex flex-col justify-center pb-20">
+                        <span className="text-[#c8962a] font-bold text-sm mb-4">Q{qIdx+1}.</span>
                         <h2 className="text-2xl font-bold text-white mb-10 leading-snug">{q[lang]}</h2>
                         <div className="flex flex-col gap-4">
                             {[q.A, q.B].map((opt, i) => (
-                                <button key={i} onClick={() => handleAnswer(opt.val)} className="p-6 text-left rounded-2xl border border-slate-700 bg-slate-800/50 text-slate-200 hover:bg-teal-900/30 hover:border-teal-500/50 transition-all font-medium text-lg">
+                                <button key={i} onClick={() => handleAnswer(opt.val)} className="p-6 text-left rounded-2xl border border-slate-700 bg-slate-800/50 text-slate-200 hover:bg-[#c8962a]/10 hover:border-[#c8962a]/50 transition-all font-medium text-lg">
                                     {opt.label[lang]}
                                 </button>
                             ))}
@@ -442,10 +526,13 @@
             );
         };
 
-        const DirectSelect = ({ onComplete, lang }) => (
-            <div className="flex flex-col h-full p-6 animate-in slide-in-from-bottom-8">
-                <header className="mb-8"><h2 className="text-2xl font-extrabold text-white">{TEXT[lang].step1_title}</h2></header>
-                <div className="flex-1 space-y-6">
+        const DirectSelect = ({ onComplete, lang, onBack }) => (
+            <div className="flex flex-col h-full pt-16 p-6 animate-in slide-in-from-bottom-8">
+                <header className="mb-8 flex flex-col gap-2">
+                    <button onClick={onBack} className="self-start text-slate-400 hover:text-white mb-2"><Icon name="arrow-left"/></button>
+                    <h2 className="text-2xl font-extrabold text-white">{TEXT[lang].step1_title}</h2>
+                </header>
+                <div className="flex-1 space-y-6 pb-20">
                     {MBTI_GROUPS.map((group) => (
                         <div key={group.key} className="space-y-2">
                             <h3 className={`text-sm font-bold ${group.color} uppercase tracking-wider pl-1`}>{group.label[lang]}</h3>
@@ -487,7 +574,7 @@
             }, [mbti, bio]);
 
             return (
-                <div className="space-y-6 animate-in fade-in">
+                <div className="space-y-6 animate-in fade-in pt-12">
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-slate-400 text-sm mb-1">{lang==='en'?'Welcome back,':'안녕하세요,'}</p>
@@ -500,7 +587,7 @@
 
                     <GlassCard className="p-5">
                         <div className="flex justify-between items-center mb-4">
-                            <h3 className="font-bold text-white flex items-center gap-2"><Icon name="activity" className="w-4 h-4 text-teal-400"/> {TEXT[lang].result_bio}</h3>
+                            <h3 className="font-bold text-white flex items-center gap-2"><Icon name="activity" className="w-4 h-4 text-[#c8962a]"/> {TEXT[lang].result_bio}</h3>
                         </div>
                         <WaveChart bio={bio} lang={lang} />
                     </GlassCard>
@@ -512,7 +599,7 @@
                                 <Icon name="glass-water" className="w-8 h-8 text-white/80" />
                             </div>
                             <div className="flex-1">
-                                <p className="text-xs text-teal-400 font-bold mb-1">{dailyPick.style} · {dailyPick.abv}%</p>
+                                <p className="text-xs text-[#c8962a] font-bold mb-1">{dailyPick.style} · {dailyPick.abv}%</p>
                                 <h4 className="text-lg font-bold text-white mb-1 leading-tight">{lang==='ko'?dailyPick.name:dailyPick.nameEn}</h4>
                                 <p className="text-xs text-slate-400 line-clamp-2">{lang==='ko'?dailyPick.desc:dailyPick.descEn}</p>
                             </div>
@@ -552,91 +639,94 @@
                 setTimeout(() => {
                     setResult({ whiskey: scored[0], blendedMood: getBlendedMood(moods, lang) });
                     setCStep(4); setLoading(false);
-                }, 1500);
+                }, 2000);
             };
 
-            if (loading) return <div className="py-20 text-center"><Icon name="loader-2" className="w-10 h-10 text-teal-500 animate-spin mx-auto mb-4"/><p className="text-slate-400">Curating...</p></div>;
+            if (loading) return <LoadingScreen lang={lang} />;
 
             if (cStep === 1) return (
-                <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
+                <div className="space-y-6 animate-in fade-in slide-in-from-right-4 pt-12">
                     <header>
                         <h2 className="text-2xl font-extrabold text-white">{t.step2_title}</h2>
                         <p className="text-slate-400 text-sm mt-1">{t.step2_sub}</p>
                     </header>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-4">
                         {MOODS.map(m => (
                             <button key={m.id} onClick={() => setMoods(p => p.includes(m.id) ? p.filter(id=>id!==m.id) : p.length<3 && !MOODS.find(x=>x.id===m.id).conflicts.some(c=>p.includes(c)) ? [...p, m.id] : p)}
-                                className={`rounded-2xl border flex items-stretch text-left min-h-[80px] transition-all ${moods.includes(m.id) ? 'border-teal-500 bg-teal-900/40 shadow-lg' : 'border-slate-700 bg-slate-800'}`}>
-                                <div className={`w-16 shrink-0 flex items-center justify-center ${moods.includes(m.id) ? 'bg-teal-800/60' : 'bg-slate-700/50'}`}><span className="text-3xl">{m.emoji}</span></div>
-                                <div className="flex-1 p-3 flex items-center"><span className={`text-sm font-bold leading-snug break-keep ${moods.includes(m.id)?'text-teal-100':'text-slate-400'}`}>{m.expr[lang]}</span></div>
+                                className={`rounded-2xl border flex items-stretch text-left min-h-[80px] transition-all ${moods.includes(m.id) ? 'border-[#c8962a] bg-[#c8962a]/20 shadow-lg' : 'border-slate-700 bg-slate-800'}`}>
+                                <div className={`w-16 shrink-0 flex items-center justify-center ${moods.includes(m.id) ? 'bg-[#c8962a]/30' : 'bg-slate-700/50'}`}><span className="text-3xl">{m.emoji}</span></div>
+                                <div className="flex-1 p-3 flex items-center"><span className={`text-sm font-bold leading-snug break-keep ${moods.includes(m.id)?'text-[#eac266]':'text-slate-400'}`}>{m.expr[lang]}</span></div>
                             </button>
                         ))}
                     </div>
-                    <button onClick={() => setCStep(2)} disabled={moods.length===0} className={`w-full py-4 rounded-2xl bg-teal-600 text-white font-bold text-lg ${moods.length===0?'opacity-50':''}`}>{t.step_next}</button>
+                    <button onClick={() => setCStep(2)} disabled={moods.length===0} className={`w-full py-4 rounded-2xl bg-[#c8962a] text-white font-bold text-lg shadow-xl shadow-[#c8962a]/30 ${moods.length===0?'opacity-50 grayscale cursor-not-allowed':'hover:bg-[#b08020]'}`}>{t.step_next}</button>
                 </div>
             );
 
             if (cStep === 2) {
                 const bM = getBlendedMood(moods, lang);
                 return (
-                    <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
-                        <header className="text-center"><h2 className="text-2xl font-extrabold text-white">{t.step3_title}</h2></header>
+                    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 pt-12">
+                        <header className="text-center">
+                            <h2 className="text-2xl font-extrabold text-white">{t.step3_title}</h2>
+                            <p className="text-slate-400 text-sm mt-1">{t.step3_sub}</p>
+                        </header>
                         <GlassCard className="flex flex-col items-center gap-4 p-8 w-full mt-6">
                             <div className="text-[5rem] drop-shadow-2xl mb-2">{bM.emoji}</div>
-                            <span className="text-3xl font-black text-teal-300 text-center">{bM.label}</span>
+                            <span className="text-3xl font-black text-[#c8962a] text-center">{bM.label}</span>
                             <span className="text-sm text-slate-300 text-center font-medium mt-2">{bM.desc}</span>
-                            <div className="mt-4 pt-5 border-t border-white/10 w-full text-center"><span className="text-base font-extrabold text-teal-400">{bM.invite}</span></div>
+                            <div className="mt-4 pt-5 border-t border-white/10 w-full text-center"><span className="text-base font-extrabold text-[#eac266]">{bM.invite}</span></div>
                         </GlassCard>
                         <div className="flex gap-3 mt-8">
-                            <button onClick={()=>setCStep(1)} className="flex-1 py-4 border border-slate-700 rounded-2xl text-slate-300 font-bold">뒤로</button>
-                            <button onClick={()=>setCStep(3)} className="flex-1 py-4 bg-teal-600 rounded-2xl text-white font-bold">계속하기</button>
+                            <button onClick={()=>setCStep(1)} className="flex-1 py-4 border border-slate-700 rounded-2xl text-slate-300 font-bold hover:bg-slate-800">뒤로</button>
+                            <button onClick={()=>setCStep(3)} className="flex-1 py-4 bg-[#c8962a] rounded-2xl text-white font-bold shadow-xl shadow-[#c8962a]/30">계속하기</button>
                         </div>
                     </div>
                 );
             }
 
             if (cStep === 3) return (
-                <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
+                <div className="space-y-6 animate-in fade-in slide-in-from-right-4 pt-12">
                     <header><h2 className="text-2xl font-extrabold text-white">{t.step4_title}</h2></header>
                     <div className="grid gap-3">
                         {PRICE_RANGES.map(r => (
-                            <button key={r.id} onClick={()=>setPrice(r.id)} className={`p-5 rounded-2xl border flex items-center justify-between ${price===r.id?'border-teal-500 bg-teal-900/40':'border-slate-700 bg-slate-800'}`}>
+                            <button key={r.id} onClick={()=>setPrice(r.id)} className={`p-5 rounded-2xl border flex items-center justify-between transition-all ${price===r.id?'border-[#c8962a] bg-[#c8962a]/20 shadow-md':'border-slate-700 bg-slate-800'}`}>
                                 <div className="flex items-center gap-3">
-                                    <div className={`p-2 rounded-full ${price===r.id?'bg-teal-800 text-teal-200':'bg-slate-700 text-slate-400'}`}><Icon name="credit-card" className="w-5 h-5"/></div>
-                                    <span className={`font-bold text-lg ${price===r.id?'text-teal-100':'text-slate-400'}`}>{r.label[lang]}</span>
+                                    <div className={`p-2 rounded-full ${price===r.id?'bg-[#c8962a]/50 text-[#fcedc2]':'bg-slate-700 text-slate-400'}`}><Icon name="credit-card" className="w-5 h-5"/></div>
+                                    <span className={`font-bold text-lg ${price===r.id?'text-[#eac266]':'text-slate-400'}`}>{r.label[lang]}</span>
                                 </div>
-                                {price===r.id && <Icon name="check" className="text-teal-400"/>}
+                                {price===r.id && <Icon name="check" className="text-[#c8962a]"/>}
                             </button>
                         ))}
                     </div>
                     <div className="flex gap-3 mt-8">
-                        <button onClick={()=>setCStep(2)} className="flex-1 py-4 border border-slate-700 rounded-2xl text-slate-300 font-bold">뒤로</button>
-                        <button onClick={run} className="flex-[2] py-4 bg-[#C8962A] rounded-2xl text-white font-bold shadow-lg shadow-[#C8962A]/20">{t.run_btn}</button>
+                        <button onClick={()=>setCStep(2)} className="flex-1 py-4 border border-slate-700 rounded-2xl text-slate-300 font-bold hover:bg-slate-800">뒤로</button>
+                        <button onClick={run} className="flex-[2] py-4 bg-[#c8962a] rounded-2xl text-white font-bold shadow-lg shadow-[#c8962a]/30">{t.run_btn}</button>
                     </div>
                 </div>
             );
 
             if (cStep === 4 && result) return (
-                <div className="space-y-6 animate-in zoom-in-95 duration-500">
+                <div className="space-y-6 animate-in zoom-in-95 duration-500 pt-10">
                     {showShare && <ShareCard result={result} mbti={mbti} lang={lang} onClose={() => setShowShare(false)} />}
                     <div className="flex justify-between items-center px-2">
-                        <button onClick={() => setCStep(1)} className="text-teal-500 text-sm font-bold flex items-center gap-1"><Icon name="rotate-ccw" className="w-4 h-4"/> 다시 큐레이션</button>
-                        <button onClick={() => setShowShare(true)} className="text-teal-500 text-sm font-bold flex items-center gap-1"><Icon name="share" className="w-4 h-4"/> 공유하기</button>
+                        <button onClick={() => setCStep(1)} className="text-[#c8962a] text-sm font-bold flex items-center gap-1"><Icon name="rotate-ccw" className="w-4 h-4"/> 다시 큐레이션</button>
+                        <button onClick={() => setShowShare(true)} className="text-[#c8962a] text-sm font-bold flex items-center gap-1"><Icon name="share" className="w-4 h-4"/> 공유하기</button>
                     </div>
-                    <div className="text-center relative pt-4">
-                        <div className="mt-4 flex justify-center min-h-[160px]"><PourAnimation color={result.whiskey.color} /></div>
+                    <div className="text-center relative pt-2">
+                        <div className="flex justify-center min-h-[160px]"><PourAnimation color={result.whiskey.color} /></div>
                         <h2 className="text-3xl font-black mt-4 text-white playfair">{lang==='ko'?result.whiskey.name:result.whiskey.nameEn}</h2>
                         <p className="text-slate-400 font-medium mt-1 text-sm">{result.whiskey.style} · {result.whiskey.abv}%</p>
                     </div>
                     <div className="flex justify-center flex-wrap gap-2 px-2">
-                        {result.whiskey.tags.map(tag => <span key={tag} className="px-3 py-1 bg-white/5 border border-white/10 text-teal-400 rounded-full text-xs font-bold uppercase">#{tag}</span>)}
+                        {result.whiskey.tags.map(tag => <span key={tag} className="px-3 py-1 bg-white/5 border border-white/10 text-[#c8962a] rounded-full text-xs font-bold uppercase tracking-widest">#{tag}</span>)}
                     </div>
                     <GlassCard className="p-6">
-                        <h3 className="text-xs font-bold text-teal-500 mb-3 uppercase tracking-widest">Tasting Notes</h3>
-                        <p className="text-sm text-slate-300 leading-relaxed">{lang==='ko'?result.whiskey.desc:result.whiskey.descEn}</p>
+                        <h3 className="text-xs font-bold text-[#c8962a] mb-3 uppercase tracking-widest">Tasting Notes</h3>
+                        <p className="text-sm text-slate-300 leading-relaxed font-medium">{lang==='ko'?result.whiskey.desc:result.whiskey.descEn}</p>
                     </GlassCard>
                     <GlassCard className="p-6">
-                        <h3 className="text-xs font-bold text-teal-500 mb-4 uppercase tracking-widest">Flavor Profile</h3>
+                        <h3 className="text-xs font-bold text-[#c8962a] mb-4 uppercase tracking-widest">Flavor Profile</h3>
                         <FlavorBars flavor={result.whiskey.flavor} lang={lang} />
                     </GlassCard>
                 </div>
@@ -646,7 +736,7 @@
         const ProfileTab = ({ mbti, lang, onReset, setLang }) => {
             const group = MBTI_GROUPS.find(g => g.types.includes(mbti));
             return (
-                <div className="space-y-6 animate-in fade-in">
+                <div className="space-y-6 animate-in fade-in pt-12">
                     <h2 className="text-2xl font-extrabold text-white mb-6">{lang==='en'?'Profile':'프로필'}</h2>
                     <GlassCard className="p-6 flex flex-col items-center text-center">
                         <div className="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mb-4 border border-slate-700 text-3xl">👤</div>
@@ -654,8 +744,8 @@
                         <h3 className="text-4xl font-black text-white playfair tracking-widest">{mbti}</h3>
                     </GlassCard>
                     <div className="space-y-3 pt-6">
-                        <button onClick={() => setLang(l => l==='ko'?'en':'ko')} className="w-full py-4 rounded-2xl bg-slate-800 border border-slate-700 text-white font-bold flex justify-between px-6 items-center">
-                            <span>{lang==='en'?'Language':'언어 설정'}</span> <span className="text-teal-400">{lang==='ko'?'한국어':'English'}</span>
+                        <button onClick={() => setLang(l => l==='ko'?'en':'ko')} className="w-full py-4 rounded-2xl bg-slate-800 border border-slate-700 text-white font-bold flex justify-between px-6 items-center hover:bg-slate-700 transition-colors">
+                            <span>{lang==='en'?'Language':'언어 설정'}</span> <span className="text-[#c8962a]">{lang==='ko'?'한국어':'English'}</span>
                         </button>
                         <button onClick={onReset} className="w-full py-4 rounded-2xl border border-red-500/30 text-red-400 font-bold hover:bg-red-500/10 transition-colors">
                             {lang==='en'?'Retake MBTI Quiz':'MBTI 퀴즈 다시하기 (초기화)'}
@@ -675,6 +765,7 @@
 
             useEffect(() => {
                 const saved = localStorage.getItem('user_mbti');
+                // Ensure splash minimum display time
                 setTimeout(() => {
                     if (saved) { setMbti(saved); setAppState('main'); } 
                     else { setAppState('onboarding'); }
@@ -692,10 +783,13 @@
 
             return (
                 <div className="app-container">
+                    {/* Always render the iOS Status Bar to maintain Native App illusion */}
+                    <IOSStatusBar />
+
                     {appState === 'splash' && <Splash onFinish={()=>{}} />}
                     {appState === 'onboarding' && <Onboarding onStartQuiz={()=>setAppState('quiz')} onDirectSelect={()=>setAppState('direct')} lang={lang} setLang={setLang} />}
                     {appState === 'quiz' && <Quiz onComplete={handleMbtiComplete} lang={lang} />}
-                    {appState === 'direct' && <DirectSelect onComplete={handleMbtiComplete} lang={lang} />}
+                    {appState === 'direct' && <DirectSelect onComplete={handleMbtiComplete} lang={lang} onBack={() => setAppState('onboarding')} />}
                     
                     {appState === 'main' && (
                         <>
