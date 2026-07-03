@@ -753,7 +753,7 @@
                         <h2 className="max-[375px]:text-[1.1rem] text-[1.35rem] font-extrabold text-white leading-tight whitespace-nowrap tracking-tighter">{t.step2_title}</h2>
                         <p className="text-slate-400 text-base mt-2">{t.step2_sub}</p>
                     </header>
-                    <div className="grid grid-cols-2 gap-3 pb-6 flex-1">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 pb-6 flex-1">
                         {MOODS.map(m => (
                             <button key={m.id} onClick={() => setMoods(p => p.includes(m.id) ? p.filter(id=>id!==m.id) : p.length<3 && !MOODS.find(x=>x.id===m.id).conflicts.some(c=>p.includes(c)) ? [...p, m.id] : p)}
                                 className={`rounded-[24px] border-2 flex flex-col items-center justify-center text-center p-4 transition-all ${moods.includes(m.id) ? 'border-[#c8962a] bg-[#c8962a]/20 shadow-lg' : 'border-slate-700 bg-slate-800'}`}>
