@@ -106,6 +106,93 @@
             flex-direction: column;
         }
 
+        /* --- Desktop Layout (>=1024px) --- */
+        @media (min-width: 1024px) {
+            .app-container {
+                max-width: 100%;
+                box-shadow: none;
+                background-color: transparent;
+            }
+
+            .bottom-nav {
+                display: none;
+            }
+
+            .content-area {
+                max-width: 1080px;
+                margin: 0 auto;
+                width: 100%;
+                padding: 0 48px 64px 48px;
+            }
+
+            .desktop-nav {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                max-width: 1080px;
+                margin: 0 auto;
+                width: 100%;
+                padding: 28px 48px 0 48px;
+                flex-shrink: 0;
+            }
+
+            .desktop-nav-brand {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .desktop-nav .nav-menu {
+                display: flex;
+                gap: 6px;
+                background: var(--card);
+                border: 1px solid var(--border);
+                border-radius: 999px;
+                padding: 6px;
+            }
+
+            .desktop-nav .nav-menu-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 10px 20px;
+                border-radius: 999px;
+                color: var(--text-dim);
+                font-weight: 700;
+                font-size: 14px;
+                background: transparent;
+                border: none;
+                cursor: pointer;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .desktop-nav .nav-menu-item.active {
+                color: #14b8a6;
+                background: rgba(20, 184, 166, 0.12);
+            }
+
+            .desktop-nav-lang {
+                padding: 8px 18px;
+                border-radius: 999px;
+                border: 1px solid var(--border);
+                background: transparent;
+                color: var(--text-dim);
+                font-weight: 700;
+                font-size: 13px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+
+            .desktop-nav-lang:hover {
+                color: var(--text);
+                border-color: var(--accent);
+            }
+        }
+
+        .desktop-nav {
+            display: none;
+        }
+
         .glass-panel {
             background: var(--card);
             backdrop-filter: blur(20px);
