@@ -795,7 +795,7 @@
             if (cStep === 3) return (
                 <div className="space-y-8 animate-in fade-in slide-in-from-right-4 pt-[calc(env(safe-area-inset-top,48px)+24px)] flex-1 flex flex-col">
                     <header className="px-2"><h2 className="max-[375px]:text-[1.4rem] text-[1.75rem] font-extrabold text-white whitespace-nowrap tracking-tighter">{t.step4_title}</h2></header>
-                    <div className="grid gap-4 flex-1">
+                    <div className="grid gap-4 lg:grid-cols-3 flex-1">
                         {PRICE_RANGES.map(r => (
                             <button key={r.id} onClick={()=>setPrice(r.id)} className={`p-6 rounded-[24px] border-2 flex items-center justify-between transition-all ${price===r.id?'border-[#c8962a] bg-[#c8962a]/20 shadow-md':'border-slate-700 bg-slate-800'}`}>
                                 <div className="flex items-center gap-4">
@@ -828,14 +828,16 @@
                     <div className="flex justify-center flex-wrap gap-2.5 px-4 pb-2">
                         {result.whiskey.tags.map(tag => <span key={tag} className="px-4 py-1.5 bg-white/5 border border-white/10 text-[#c8962a] rounded-full text-xs font-bold uppercase tracking-widest">#{tag}</span>)}
                     </div>
-                    <GlassCard className="p-8">
-                        <h3 className="text-sm font-bold text-[#c8962a] mb-4 uppercase tracking-widest flex items-center gap-2"><Icon name="book-open" className="w-5 h-5"/> Tasting Notes</h3>
-                        <p className="text-base text-slate-200 leading-relaxed font-medium">{lang==='ko'?result.whiskey.desc:result.whiskey.descEn}</p>
-                    </GlassCard>
-                    <GlassCard className="p-8">
-                        <h3 className="text-sm font-bold text-[#c8962a] mb-6 uppercase tracking-widest flex items-center gap-2"><Icon name="bar-chart-2" className="w-5 h-5"/> Flavor Profile</h3>
-                        <FlavorBars flavor={result.whiskey.flavor} lang={lang} />
-                    </GlassCard>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 lg:items-start">
+                        <GlassCard className="p-8">
+                            <h3 className="text-sm font-bold text-[#c8962a] mb-4 uppercase tracking-widest flex items-center gap-2"><Icon name="book-open" className="w-5 h-5"/> Tasting Notes</h3>
+                            <p className="text-base text-slate-200 leading-relaxed font-medium">{lang==='ko'?result.whiskey.desc:result.whiskey.descEn}</p>
+                        </GlassCard>
+                        <GlassCard className="p-8">
+                            <h3 className="text-sm font-bold text-[#c8962a] mb-6 uppercase tracking-widest flex items-center gap-2"><Icon name="bar-chart-2" className="w-5 h-5"/> Flavor Profile</h3>
+                            <FlavorBars flavor={result.whiskey.flavor} lang={lang} />
+                        </GlassCard>
+                    </div>
                     <div className="pt-2 pb-6">
                         <button 
                             onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(result.whiskey.name + ' 위스키')}`, '_blank')}
