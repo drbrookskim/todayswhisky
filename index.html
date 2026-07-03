@@ -112,7 +112,7 @@
 
         /* --- Desktop Layout (>=1024px) --- */
         @media (min-width: 1024px) {
-            .app-container {
+            .app-container.is-main {
                 max-width: 100%;
                 box-shadow: none;
                 background-color: transparent;
@@ -921,7 +921,7 @@
             };
 
             return (
-                <div className="app-container">
+                <div className={`app-container ${appState === 'main' ? 'is-main' : ''}`}>
                     {appState === 'splash' && <Splash onFinish={() => {
                         const savedMbti = safeStorage.getItem('whiskey_mbti');
                         setAppState(savedMbti ? 'main' : 'onboard');
