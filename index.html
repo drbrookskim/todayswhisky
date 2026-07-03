@@ -942,6 +942,30 @@
                     
                     {appState === 'main' && (
                         <>
+                            <nav className="desktop-nav">
+                                <div className="desktop-nav-brand">
+                                    <span className="text-xl">🥃</span>
+                                    <span className="playfair font-bold text-lg text-white">{TEXT[lang].title}</span>
+                                </div>
+                                <div className="nav-menu">
+                                    <button className={`nav-menu-item ${activeTab === 'home' ? 'active' : ''}`} onClick={() => setActiveTab('home')}>
+                                        <Icon name="home" className="w-4 h-4" />
+                                        <span>{TEXT[lang].tab_home}</span>
+                                    </button>
+                                    <button className={`nav-menu-item ${activeTab === 'curate' ? 'active' : ''}`} onClick={() => setActiveTab('curate')}>
+                                        <Icon name="glass-water" className="w-4 h-4" />
+                                        <span>{TEXT[lang].tab_curate}</span>
+                                    </button>
+                                    <button className={`nav-menu-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
+                                        <Icon name="user" className="w-4 h-4" />
+                                        <span>{TEXT[lang].tab_profile}</span>
+                                    </button>
+                                </div>
+                                <button className="desktop-nav-lang" onClick={() => setLang(l => l === 'ko' ? 'en' : 'ko')}>
+                                    {lang === 'en' ? 'KO' : 'EN'}
+                                </button>
+                            </nav>
+
                             <div className="content-area hide-scroll">
                                 {activeTab === 'home' && <HomeTab mbti={mbti} lang={lang} />}
                                 {activeTab === 'curate' && <CurateTab mbti={mbti} lang={lang} bio={calculateBiorhythm(mbti)} />}
