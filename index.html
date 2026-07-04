@@ -850,7 +850,7 @@
             );
         };
 
-        const ProfileTab = ({ mbti, lang, onReset, setLang }) => {
+        const ProfileTab = ({ mbti, lang, onReset, setLang, theme, setTheme }) => {
             const group = MBTI_GROUPS.find(g => g.types.includes(mbti));
             return (
                 <div className="space-y-8 animate-in fade-in pt-[calc(env(safe-area-inset-top,48px)+24px)] flex-1 flex flex-col">
@@ -870,8 +870,14 @@
                         <div className="flex flex-col gap-4">
                             <button
                                 onClick={() => setLang(l => l === 'ko' ? 'en' : 'ko')}
-                                className="w-full py-5 rounded-[20px] bg-slate-800 text-white font-bold text-lg border-2 border-slate-700 hover:bg-slate-700 transition-colors">
+                                className="w-full py-5 rounded-[20px] bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-bold text-lg border-2 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                                 {lang === 'en' ? '한국어로 변경' : 'Change to English'}
+                            </button>
+
+                            <button
+                                onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
+                                className="w-full py-5 rounded-[20px] bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-bold text-lg border-2 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                                {theme === 'dark' ? (lang === 'en' ? 'Switch to Light Mode' : '라이트 모드로 변경') : (lang === 'en' ? 'Switch to Dark Mode' : '다크 모드로 변경')}
                             </button>
 
                             <button
@@ -891,20 +897,29 @@
             const [appState, setAppState] = useState('splash'); // splash, onboard, quiz, direct, main
             const [mbti, setMbti] = useState(null);
             const [lang, setLang] = useState('ko');
+            const [theme, setTheme] = useState('dark');
             const [activeTab, setActiveTab] = useState('home'); // home, curate, profile
 
             useEffect(() => {
                 const savedMbti = safeStorage.getItem('whiskey_mbti');
                 const savedLang = safeStorage.getItem('whiskey_lang');
+                const savedTheme = safeStorage.getItem('whiskey_theme');
                 if (savedLang) setLang(savedLang);
                 if (savedMbti) {
                     setMbti(savedMbti);
                 }
+                if (savedTheme) setTheme(savedTheme);
+                else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) setTheme('light');
             }, []);
 
             useEffect(() => {
                 safeStorage.setItem('whiskey_lang', lang);
             }, [lang]);
+
+            useEffect(() => {
+                document.documentElement.classList.toggle('dark', theme === 'dark');
+                safeStorage.setItem('whiskey_theme', theme);
+            }, [theme]);
 
             const handleMbtiComplete = (result) => {
                 setMbti(result);
@@ -970,7 +985,7 @@
                             <div className="content-area hide-scroll">
                                 {activeTab === 'home' && <HomeTab mbti={mbti} lang={lang} />}
                                 {activeTab === 'curate' && <CurateTab mbti={mbti} lang={lang} bio={calculateBiorhythm(mbti)} />}
-                                {activeTab === 'profile' && <ProfileTab mbti={mbti} lang={lang} onReset={handleReset} setLang={setLang} />}
+                                {activeTab === 'profile' && <ProfileTab mbti={mbti} lang={lang} onReset={handleReset} setLang={setLang} theme={theme} setTheme={setTheme} />}
                             </div>
                             
                             <nav className="bottom-nav">
