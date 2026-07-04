@@ -570,7 +570,7 @@
             return (
                 <div className="flex flex-col items-center justify-center h-full animate-in fade-in duration-1000">
                     <div className="text-[5rem] mb-8 animate-bounce">🥃</div>
-                    <h1 className="text-4xl font-black text-white playfair tracking-widest mb-3">WHISKY MBTI</h1>
+                    <h1 className="text-4xl font-black text-slate-900 dark:text-white playfair tracking-widest mb-3">WHISKY MBTI</h1>
                     <p className="text-[#c8962a] text-sm font-bold tracking-widest uppercase">Curated just for you</p>
                 </div>
             );
@@ -582,12 +582,12 @@
                     <div className="w-28 h-28 bg-[#c8962a]/10 rounded-full flex items-center justify-center mb-10 border border-[#c8962a]/20 shadow-[0_0_30px_rgba(200,150,42,0.15)]">
                         <Icon name="compass" className="w-12 h-12 text-[#c8962a]" />
                     </div>
-                    <h2 className="text-[2rem] max-[400px]:text-[1.6rem] font-black text-white mb-5 leading-tight whitespace-nowrap tracking-tighter">{TEXT[lang].onboard_title}</h2>
-                    <p className="text-slate-400 text-lg leading-relaxed mb-14 px-2 whitespace-pre-line">{TEXT[lang].onboard_sub}</p>
+                    <h2 className="text-[2rem] max-[400px]:text-[1.6rem] font-black text-slate-900 dark:text-white mb-5 leading-tight whitespace-nowrap tracking-tighter">{TEXT[lang].onboard_title}</h2>
+                    <p className="text-slate-500 dark:text-slate-400 text-lg leading-relaxed mb-14 px-2 whitespace-pre-line">{TEXT[lang].onboard_sub}</p>
                 </div>
                 <div className="flex flex-col gap-4 pb-4">
                     <button onClick={onStartQuiz} className="w-full py-5 rounded-[20px] bg-[#c8962a] text-white font-bold text-xl shadow-xl shadow-[#c8962a]/30 hover:bg-[#a67c20] transition-colors">{TEXT[lang].start_quiz}</button>
-                    <button onClick={onDirectSelect} className="w-full py-5 rounded-[20px] border-2 border-slate-700 text-slate-300 font-bold text-lg hover:bg-slate-800 transition-colors">{TEXT[lang].skip_quiz}</button>
+                    <button onClick={onDirectSelect} className="w-full py-5 rounded-[20px] border-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">{TEXT[lang].skip_quiz}</button>
                 </div>
             </div>
         );
@@ -609,15 +609,15 @@
 
             return (
                 <div className="flex flex-col h-full pt-[calc(env(safe-area-inset-top,48px)+32px)] p-6 animate-in slide-in-from-right-8">
-                    <div className="w-full h-2.5 bg-slate-800 rounded-full mb-10 overflow-hidden">
+                    <div className="w-full h-2.5 bg-slate-200 dark:bg-slate-800 rounded-full mb-10 overflow-hidden">
                         <div className="h-full bg-[#c8962a] transition-all duration-300" style={{ width: `${((qIdx+1)/QUIZ_QUESTIONS.length)*100}%` }}></div>
                     </div>
                     <div className="flex-1 flex flex-col justify-center pb-24">
                         <span className="text-[#c8962a] font-bold text-lg mb-5">Q{qIdx+1}.</span>
-                        <h2 className="text-[1.75rem] font-bold text-white mb-12 leading-snug">{q[lang]}</h2>
+                        <h2 className="text-[1.75rem] font-bold text-slate-900 dark:text-white mb-12 leading-snug">{q[lang]}</h2>
                         <div className="flex flex-col gap-5">
                             {[q.A, q.B].map((opt, i) => (
-                                <button key={i} onClick={() => handleAnswer(opt.val)} className="p-7 text-left rounded-[24px] border-2 border-slate-700 bg-slate-800/50 text-slate-200 hover:bg-[#c8962a]/10 hover:border-[#c8962a]/50 transition-all font-medium text-xl leading-relaxed shadow-sm">
+                                <button key={i} onClick={() => handleAnswer(opt.val)} className="p-7 text-left rounded-[24px] border-2 border-slate-200 dark:border-slate-700 bg-slate-100/70 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 hover:bg-[#c8962a]/10 hover:border-[#c8962a]/50 transition-all font-medium text-xl leading-relaxed shadow-sm">
                                     {opt.label[lang]}
                                 </button>
                             ))}
@@ -630,8 +630,8 @@
         const DirectSelect = ({ onComplete, lang, onBack }) => (
             <div className="flex flex-col h-full pt-[calc(env(safe-area-inset-top,48px)+32px)] p-6 animate-in slide-in-from-bottom-8 overflow-y-auto hide-scroll">
                 <header className="mb-10 flex flex-col gap-3">
-                    <button onClick={onBack} className="self-start p-2 -ml-2 text-slate-400 hover:text-white mb-2"><Icon name="arrow-left" className="w-7 h-7"/></button>
-                    <h2 className="max-[375px]:text-2xl text-3xl font-extrabold text-white whitespace-nowrap tracking-tighter">{TEXT[lang].step1_title}</h2>
+                    <button onClick={onBack} className="self-start p-2 -ml-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white mb-2"><Icon name="arrow-left" className="w-7 h-7"/></button>
+                    <h2 className="max-[375px]:text-2xl text-3xl font-extrabold text-slate-900 dark:text-white whitespace-nowrap tracking-tighter">{TEXT[lang].step1_title}</h2>
                 </header>
                 <div className="flex-1 space-y-8 pb-20">
                     {MBTI_GROUPS.map((group) => (
@@ -639,7 +639,7 @@
                             <h3 className={`text-sm font-bold ${group.color} uppercase tracking-widest pl-1`}>{group.label[lang]}</h3>
                             <div className="grid grid-cols-4 gap-3">
                                 {group.types.map(type => (
-                                    <button key={type} onClick={() => onComplete(type)} className={`py-5 rounded-2xl border-2 transition-all flex flex-col items-center justify-center border-slate-700 bg-slate-800/50 text-slate-300 hover:bg-slate-700 hover:border-slate-500`}>
+                                    <button key={type} onClick={() => onComplete(type)} className={`py-5 rounded-2xl border-2 transition-all flex flex-col items-center justify-center border-slate-200 dark:border-slate-700 bg-slate-100/70 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-500`}>
                                         <span className="font-bold text-lg">{type}</span>
                                     </button>
                                 ))}
