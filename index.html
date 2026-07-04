@@ -441,10 +441,16 @@
             );
         };
 
-        const PourAnimation = ({ color, onComplete }) => {
+        const PourAnimation = ({ color, onComplete, theme }) => {
             const [fill, setFill] = useState(0);
             const [stream, setStream] = useState(true);
             const rafRef = useRef(null);
+            const isLight = theme === 'light';
+            const glassStroke = isLight ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.2)';
+            const glassGrad = isLight
+                ? [['0%','black',0.02], ['38%','black',0.08], ['100%','black',0.01]]
+                : [['0%','white',0.04], ['38%','white',0.15], ['100%','white',0.02]];
+            const rimHighlight = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.1)';
 
             useEffect(() => {
                 let start = null;
@@ -465,7 +471,7 @@
                     <svg width="180" height="150" viewBox="0 0 180 150" fill="none">
                         <defs>
                             <linearGradient id="glassBodyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                                <stop offset="0%" stopColor="white" stopOpacity="0.04"/><stop offset="38%" stopColor="white" stopOpacity="0.15"/><stop offset="100%" stopColor="white" stopOpacity="0.02"/>
+                                {glassGrad.map(([offset, stopColor, stopOpacity]) => <stop key={offset} offset={offset} stopColor={stopColor} stopOpacity={stopOpacity}/>)}
                             </linearGradient>
                             <clipPath id="glassClip"><path d="M25 14 L22 93 Q22 103 35 103 L145 103 Q158 103 158 93 L155 14 Z"/></clipPath>
                             <radialGradient id="iceG2" cx="40%" cy="35%" r="55%"><stop offset="0%" stopColor="rgba(255,255,255,0.78)"/><stop offset="100%" stopColor="rgba(200,235,255,0.22)"/></radialGradient>
@@ -480,7 +486,7 @@
                                 )}
                             </g>
                         )}
-                        <path d="M25 14 L22 93 Q22 103 35 103 L145 103 Q158 103 158 93 L155 14 Z" fill="url(#glassBodyGrad)" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5"/>
+                        <path d="M25 14 L22 93 Q22 103 35 103 L145 103 Q158 103 158 93 L155 14 Z" fill="url(#glassBodyGrad)" stroke={glassStroke} strokeWidth="1.5"/>
                         <g clipPath="url(#glassClip)">
                             <rect x="22" y={liquidY} width="136" height={93-liquidY} fill={color} opacity="0.7" />
                             {fill > 3 && <ellipse cx="90" cy={liquidY} rx="62" ry="3" fill={color} opacity="0.4" style={{ animation:'wave 1.8s ease-in-out infinite' }} />}
@@ -491,7 +497,7 @@
                                 <rect x="66" y="68" width="46" height="30" rx="6" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="0.75"/>
                             </g>
                         )}
-                        <rect x="25" y="14" width="130" height="8" rx="4" fill="rgba(255,255,255,0.1)"/>
+                        <rect x="25" y="14" width="130" height="8" rx="4" fill={rimHighlight}/>
                     </svg>
                     <div style={{ position:'absolute', inset:-16, background:`radial-gradient(circle at 50% 75%, ${color}30 0%, transparent 60%)`, pointerEvents:'none', opacity: fill / 62 }}/>
                 </div>
