@@ -576,11 +576,8 @@
             );
         };
 
-        const Onboarding = ({ onStartQuiz, onDirectSelect, lang, setLang }) => (
+        const Onboarding = ({ onStartQuiz, onDirectSelect, lang }) => (
             <div className="flex flex-col h-full pt-[calc(env(safe-area-inset-top,48px)+32px)] p-8 animate-in slide-in-from-bottom-8 duration-500">
-                <div className="flex justify-end mb-10 relative z-10">
-                    <button onClick={() => setLang(l => l==='ko'?'en':'ko')} className="px-4 py-2 text-sm font-bold rounded-full border border-slate-700 bg-slate-800/50 text-slate-300">{lang==='ko'?'EN':'KR'}</button>
-                </div>
                 <div className="flex-1 flex flex-col justify-center items-center text-center">
                     <div className="w-28 h-28 bg-[#c8962a]/10 rounded-full flex items-center justify-center mb-10 border border-[#c8962a]/20 shadow-[0_0_30px_rgba(200,150,42,0.15)]">
                         <Icon name="compass" className="w-12 h-12 text-[#c8962a]" />
@@ -930,11 +927,10 @@
                     }} />}
                     
                     {appState === 'onboard' && (
-                        <Onboarding 
-                            onStartQuiz={() => setAppState('quiz')} 
-                            onDirectSelect={() => setAppState('direct')} 
-                            lang={lang} 
-                            setLang={setLang} 
+                        <Onboarding
+                            onStartQuiz={() => setAppState('quiz')}
+                            onDirectSelect={() => setAppState('direct')}
+                            lang={lang}
                         />
                     )}
                     
@@ -969,9 +965,6 @@
                                         <span>{TEXT[lang].tab_profile}</span>
                                     </button>
                                 </div>
-                                <button className="desktop-nav-lang" onClick={() => setLang(l => l === 'ko' ? 'en' : 'ko')}>
-                                    {lang === 'en' ? 'KO' : 'EN'}
-                                </button>
                             </nav>
 
                             <div className="content-area hide-scroll">
