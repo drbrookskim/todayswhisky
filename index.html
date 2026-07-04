@@ -20,6 +20,20 @@
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
         
         :root {
+            --bg: #f7f5f2;
+            --card: rgba(0, 0, 0, 0.03);
+            --border: rgba(0, 0, 0, 0.08);
+            --accent: #96701e;
+            --accent-dim: rgba(150, 112, 30, 0.12);
+            --text: #1a1512;
+            --text-dim: #6b6b6b;
+            --nav-bg: rgba(255, 255, 255, 0.85);
+            --shell-shadow: 0 0 40px rgba(0, 0, 0, 0.12);
+            --body-bg-solid: #f2ede6;
+            --body-bg-image: radial-gradient(ellipse at 50% -10%, rgba(13, 148, 136, 0.08) 0%, #f7f5f2 70%);
+        }
+
+        html.dark {
             --bg: #080604;
             --card: rgba(255, 255, 255, 0.035);
             --border: rgba(255, 255, 255, 0.08);
@@ -27,13 +41,17 @@
             --accent-dim: rgba(200, 150, 42, 0.15);
             --text: #f8f8f8;
             --text-dim: #888888;
+            --nav-bg: rgba(8, 6, 4, 0.88);
+            --shell-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+            --body-bg-solid: #0f172a;
+            --body-bg-image: radial-gradient(ellipse at 50% -10%, rgba(13, 148, 136, 0.15) 0%, #080604 70%);
         }
 
         body {
             font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
-            background-color: #0f172a;
+            background-color: var(--body-bg-solid);
             color: var(--text);
-            background-image: radial-gradient(ellipse at 50% -10%, rgba(13, 148, 136, 0.15) 0%, #080604 70%);
+            background-image: var(--body-bg-image);
             min-height: 100vh;
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
@@ -59,7 +77,7 @@
             flex-direction: column;
             position: relative;
             background-color: var(--bg);
-            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+            box-shadow: var(--shell-shadow);
             overflow: hidden;
         }
 
@@ -68,7 +86,7 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(8, 6, 4, 0.88);
+            background: var(--nav-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-top: 1px solid var(--border);
@@ -175,22 +193,6 @@
                 background: rgba(20, 184, 166, 0.12);
             }
 
-            .desktop-nav-lang {
-                padding: 8px 18px;
-                border-radius: 999px;
-                border: 1px solid var(--border);
-                background: transparent;
-                color: var(--text-dim);
-                font-weight: 700;
-                font-size: 13px;
-                cursor: pointer;
-                transition: all 0.2s ease;
-            }
-
-            .desktop-nav-lang:hover {
-                color: var(--text);
-                border-color: var(--accent);
-            }
         }
 
         .glass-panel {
