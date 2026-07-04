@@ -398,7 +398,11 @@
             );
         };
 
-        const WaveChart = ({ bio, lang }) => {
+        const WaveChart = ({ bio, lang, theme }) => {
+            const isLight = theme === 'light';
+            const gridColor = isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
+            const todayLineColor = isLight ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.2)';
+            const dotStroke = isLight ? '#f7f5f2' : '#1e293b';
             const cycles = {
                 physical: { v: bio.physical/100 * 2 - 1, color:'#0d9488', ko:'신체', en:'Physical' },
                 emotional: { v: bio.emotional/100 * 2 - 1, color:'#f59e0b', ko:'감성', en:'Emotional' },
@@ -414,22 +418,22 @@
 
             return (
                 <div>
-                    <div className="bg-black/40 rounded-3xl p-5 mb-5 border border-white/5 relative overflow-hidden">
-                        <div className="text-[11px] text-slate-500 mb-3 flex justify-between relative z-10">
+                    <div className="bg-black/5 dark:bg-black/40 rounded-3xl p-5 mb-5 border border-black/5 dark:border-white/5 relative overflow-hidden">
+                        <div className="text-[11px] text-slate-400 dark:text-slate-500 mb-3 flex justify-between relative z-10">
                             <span>← 14일 전</span><span className="text-[#c8962a] font-bold">오늘</span><span>7일 후 →</span>
                         </div>
                         <svg width="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
-                            <line x1="0" y1={H/2} x2={W} y2={H/2} stroke="rgba(255,255,255,0.1)" strokeWidth="1"/>
-                            <line x1={x(14)} y1="0" x2={x(14)} y2={H} stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" strokeDasharray="4,3"/>
+                            <line x1="0" y1={H/2} x2={W} y2={H/2} stroke={gridColor} strokeWidth="1"/>
+                            <line x1={x(14)} y1="0" x2={x(14)} y2={H} stroke={todayLineColor} strokeWidth="1.5" strokeDasharray="4,3"/>
                             {Object.entries(cycles).map(([k,c]) => <path key={k} d={wavePath(c.v)} fill="none" stroke={c.color} strokeWidth="2.5" opacity="0.85"/>)}
-                            {Object.entries(cycles).map(([k,c]) => <circle key={`dot-${k}`} cx={x(14)} cy={y(c.v)} r="4.5" fill={c.color} stroke="#1e293b" strokeWidth="2"/>)}
+                            {Object.entries(cycles).map(([k,c]) => <circle key={`dot-${k}`} cx={x(14)} cy={y(c.v)} r="4.5" fill={c.color} stroke={dotStroke} strokeWidth="2"/>)}
                         </svg>
                     </div>
                     <div className="flex gap-3">
                         {Object.entries(cycles).map(([k,c]) => (
-                            <div key={k} className="flex-1 p-3 rounded-2xl text-center border border-white/5 bg-white/5">
+                            <div key={k} className="flex-1 p-3 rounded-2xl text-center border border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/5">
                                 <div style={{ color: c.color }} className="text-[11px] font-bold mb-1.5">{lang==='en'?c.en:c.ko}</div>
-                                <div className="text-2xl font-black text-slate-100 playfair">{Math.round((c.v + 1) / 2 * 100)}</div>
+                                <div className="text-2xl font-black text-slate-800 dark:text-slate-100 playfair">{Math.round((c.v + 1) / 2 * 100)}</div>
                             </div>
                         ))}
                     </div>
@@ -652,7 +656,7 @@
 
         // --- Main Tabs ---
 
-        const HomeTab = ({ mbti, lang }) => {
+        const HomeTab = ({ mbti, lang, theme }) => {
             const group = MBTI_GROUPS.find(g => g.types.includes(mbti));
             const bio = useMemo(() => calculateBiorhythm(mbti), [mbti]);
             
@@ -690,7 +694,7 @@
                             <div className="flex justify-between items-center mb-6 px-1">
                                 <h3 className="font-bold text-white flex items-center gap-2 text-lg"><Icon name="activity" className="w-5 h-5 text-[#c8962a]"/> {TEXT[lang].result_bio}</h3>
                             </div>
-                            <WaveChart bio={bio} lang={lang} />
+                            <WaveChart bio={bio} lang={lang} theme={theme} />
                         </GlassCard>
 
                         <div className="pb-4">
@@ -983,7 +987,7 @@
                             </nav>
 
                             <div className="content-area hide-scroll">
-                                {activeTab === 'home' && <HomeTab mbti={mbti} lang={lang} />}
+                                {activeTab === 'home' && <HomeTab mbti={mbti} lang={lang} theme={theme} />}
                                 {activeTab === 'curate' && <CurateTab mbti={mbti} lang={lang} bio={calculateBiorhythm(mbti)} theme={theme} />}
                                 {activeTab === 'profile' && <ProfileTab mbti={mbti} lang={lang} onReset={handleReset} setLang={setLang} theme={theme} setTheme={setTheme} />}
                             </div>
