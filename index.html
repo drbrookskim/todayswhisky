@@ -392,7 +392,7 @@
                 <div className="flex flex-col gap-3">
                     {Object.entries(flavor).map(([k,v]) => (
                         <div key={k}>
-                            <div className="flex justify-between mb-1"><span className="text-slate-400 text-xs font-medium">{lang==='en' ? labels[k].en : labels[k].ko}</span><span className="text-[#c8962a] text-xs font-mono font-bold playfair">{v}</span></div>
+                            <div className="flex justify-between mb-1"><span className="text-slate-500 dark:text-slate-400 text-xs font-medium">{lang==='en' ? labels[k].en : labels[k].ko}</span><span className="text-[#c8962a] text-xs font-mono font-bold playfair">{v}</span></div>
                             <div className="h-1.5 bg-slate-300/50 dark:bg-slate-700/50 rounded-full overflow-hidden"><div className="h-full rounded-full bg-gradient-to-r from-[#c8962a]/50 to-[#c8962a]" style={{ width: `${v}%`, transition: 'width 1.2s cubic-bezier(0.22,1,0.36,1)' }} /></div>
                         </div>
                     ))}
@@ -700,7 +700,7 @@
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 lg:items-start">
                         <GlassCard className="p-6">
                             <div className="flex justify-between items-center mb-6 px-1">
-                                <h3 className="font-bold text-white flex items-center gap-2 text-lg"><Icon name="activity" className="w-5 h-5 text-[#c8962a]"/> {TEXT[lang].result_bio}</h3>
+                                <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-lg"><Icon name="activity" className="w-5 h-5 text-[#c8962a]"/> {TEXT[lang].result_bio}</h3>
                             </div>
                             <WaveChart bio={bio} lang={lang} theme={theme} />
                         </GlassCard>
@@ -976,7 +976,7 @@
                             <nav className="desktop-nav">
                                 <div className="desktop-nav-brand">
                                     <span className="text-xl">🥃</span>
-                                    <span className="playfair font-bold text-lg text-white">{TEXT[lang].title}</span>
+                                    <span className="playfair font-bold text-lg text-slate-900 dark:text-white">{TEXT[lang].title}</span>
                                 </div>
                                 <div className="nav-menu">
                                     <button className={`nav-menu-item ${activeTab === 'home' ? 'active' : ''}`} onClick={() => setActiveTab('home')}>
