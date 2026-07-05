@@ -129,6 +129,13 @@
             display: none;
         }
 
+        .onboarding-shell {
+            display: block;
+        }
+        .onboarding-brand-panel {
+            display: none;
+        }
+
         /* --- Desktop Layout (>=1024px) --- */
         @media (min-width: 1024px) {
             .app-container.is-main {
@@ -194,6 +201,23 @@
                 background: rgba(20, 184, 166, 0.12);
             }
 
+            .onboarding-shell {
+                display: flex;
+                align-items: stretch;
+                min-height: 100vh;
+                width: 100%;
+            }
+
+            .onboarding-brand-panel {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                flex: 1;
+                padding: 64px;
+                text-align: center;
+                background-image: radial-gradient(ellipse at 50% 30%, rgba(200,150,42,0.12) 0%, transparent 60%);
+            }
         }
 
         .glass-panel {
@@ -994,76 +1018,82 @@
                 setActiveTab('home');
             };
 
-            return (
-                <div className={`app-container ${appState === 'main' ? 'is-main' : ''}`}>
-                    {appState === 'splash' && <Splash onFinish={() => {
-                        const savedMbti = safeStorage.getItem('whiskey_mbti');
-                        setAppState(savedMbti ? 'main' : 'onboard');
-                    }} />}
-                    
-                    {appState === 'onboard' && (
-                        <Onboarding
-                            onStartQuiz={() => setAppState('quiz')}
-                            onDirectSelect={() => setAppState('direct')}
-                            lang={lang}
-                        />
-                    )}
-                    
-                    {appState === 'quiz' && <Quiz onComplete={handleMbtiComplete} lang={lang} />}
-                    
-                    {appState === 'direct' && (
-                        <DirectSelect 
-                            onComplete={handleMbtiComplete} 
-                            lang={lang} 
-                            onBack={() => setAppState('onboard')} 
-                        />
-                    )}
-                    
-                    {appState === 'main' && (
-                        <>
-                            <nav className="desktop-nav">
-                                <div className="desktop-nav-brand">
-                                    <span className="text-xl">🥃</span>
-                                    <span className="playfair font-bold text-lg text-slate-900 dark:text-white">{TEXT[lang].title}</span>
-                                </div>
-                                <div className="nav-menu">
-                                    <button className={`nav-menu-item ${activeTab === 'home' ? 'active' : ''}`} onClick={() => setActiveTab('home')}>
-                                        <Icon name="home" className="w-4 h-4" />
-                                        <span>{TEXT[lang].tab_home}</span>
-                                    </button>
-                                    <button className={`nav-menu-item ${activeTab === 'curate' ? 'active' : ''}`} onClick={() => setActiveTab('curate')}>
-                                        <Icon name="glass-water" className="w-4 h-4" />
-                                        <span>{TEXT[lang].tab_curate}</span>
-                                    </button>
-                                    <button className={`nav-menu-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
-                                        <Icon name="user" className="w-4 h-4" />
-                                        <span>{TEXT[lang].tab_profile}</span>
-                                    </button>
-                                </div>
-                            </nav>
+            return appState !== 'main' ? (
+                <div className="onboarding-shell">
+                    <div className="onboarding-brand-panel">
+                        <div className="text-[4rem] mb-6">🥃</div>
+                        <h1 className="playfair text-4xl font-black text-slate-900 dark:text-white tracking-widest mb-4">WHISKY MBTI</h1>
+                        <h2 className="text-2xl font-bold text-slate-700 dark:text-slate-200 mb-4">{TEXT[lang].onboard_title}</h2>
+                        <p className="text-slate-500 dark:text-slate-400 text-lg leading-relaxed whitespace-pre-line max-w-md">{TEXT[lang].onboard_sub}</p>
+                    </div>
+                    <div className="app-container">
+                        {appState === 'splash' && <Splash onFinish={() => {
+                            const savedMbti = safeStorage.getItem('whiskey_mbti');
+                            setAppState(savedMbti ? 'main' : 'onboard');
+                        }} />}
 
-                            <div className="content-area hide-scroll">
-                                {activeTab === 'home' && <HomeTab mbti={mbti} lang={lang} theme={theme} />}
-                                {activeTab === 'curate' && <CurateTab mbti={mbti} lang={lang} bio={calculateBiorhythm(mbti)} theme={theme} />}
-                                {activeTab === 'profile' && <ProfileTab mbti={mbti} lang={lang} onReset={handleReset} setLang={setLang} theme={theme} setTheme={setTheme} />}
-                            </div>
-                            
-                            <nav className="bottom-nav">
-                                <button className={`nav-item ${activeTab === 'home' ? 'active' : ''}`} onClick={() => setActiveTab('home')}>
-                                    <Icon name="home" className="w-6 h-6" />
-                                    <span className="text-[10px] font-bold">{TEXT[lang].tab_home}</span>
-                                </button>
-                                <button className={`nav-item ${activeTab === 'curate' ? 'active' : ''}`} onClick={() => setActiveTab('curate')}>
-                                    <Icon name="glass-water" className="w-6 h-6" />
-                                    <span className="text-[10px] font-bold">{TEXT[lang].tab_curate}</span>
-                                </button>
-                                <button className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
-                                    <Icon name="user" className="w-6 h-6" />
-                                    <span className="text-[10px] font-bold">{TEXT[lang].tab_profile}</span>
-                                </button>
-                            </nav>
-                        </>
-                    )}
+                        {appState === 'onboard' && (
+                            <Onboarding
+                                onStartQuiz={() => setAppState('quiz')}
+                                onDirectSelect={() => setAppState('direct')}
+                                lang={lang}
+                            />
+                        )}
+
+                        {appState === 'quiz' && <Quiz onComplete={handleMbtiComplete} lang={lang} />}
+
+                        {appState === 'direct' && (
+                            <DirectSelect
+                                onComplete={handleMbtiComplete}
+                                lang={lang}
+                                onBack={() => setAppState('onboard')}
+                            />
+                        )}
+                    </div>
+                </div>
+            ) : (
+                <div className="app-container is-main">
+                    <nav className="desktop-nav">
+                        <div className="desktop-nav-brand">
+                            <span className="text-xl">🥃</span>
+                            <span className="playfair font-bold text-lg text-slate-900 dark:text-white">{TEXT[lang].title}</span>
+                        </div>
+                        <div className="nav-menu">
+                            <button className={`nav-menu-item ${activeTab === 'home' ? 'active' : ''}`} onClick={() => setActiveTab('home')}>
+                                <Icon name="home" className="w-4 h-4" />
+                                <span>{TEXT[lang].tab_home}</span>
+                            </button>
+                            <button className={`nav-menu-item ${activeTab === 'curate' ? 'active' : ''}`} onClick={() => setActiveTab('curate')}>
+                                <Icon name="glass-water" className="w-4 h-4" />
+                                <span>{TEXT[lang].tab_curate}</span>
+                            </button>
+                            <button className={`nav-menu-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
+                                <Icon name="user" className="w-4 h-4" />
+                                <span>{TEXT[lang].tab_profile}</span>
+                            </button>
+                        </div>
+                    </nav>
+
+                    <div className="content-area hide-scroll">
+                        {activeTab === 'home' && <HomeTab mbti={mbti} lang={lang} theme={theme} />}
+                        {activeTab === 'curate' && <CurateTab mbti={mbti} lang={lang} bio={calculateBiorhythm(mbti)} theme={theme} />}
+                        {activeTab === 'profile' && <ProfileTab mbti={mbti} lang={lang} onReset={handleReset} setLang={setLang} theme={theme} setTheme={setTheme} />}
+                    </div>
+
+                    <nav className="bottom-nav">
+                        <button className={`nav-item ${activeTab === 'home' ? 'active' : ''}`} onClick={() => setActiveTab('home')}>
+                            <Icon name="home" className="w-6 h-6" />
+                            <span className="text-[10px] font-bold">{TEXT[lang].tab_home}</span>
+                        </button>
+                        <button className={`nav-item ${activeTab === 'curate' ? 'active' : ''}`} onClick={() => setActiveTab('curate')}>
+                            <Icon name="glass-water" className="w-6 h-6" />
+                            <span className="text-[10px] font-bold">{TEXT[lang].tab_curate}</span>
+                        </button>
+                        <button className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
+                            <Icon name="user" className="w-6 h-6" />
+                            <span className="text-[10px] font-bold">{TEXT[lang].tab_profile}</span>
+                        </button>
+                    </nav>
                 </div>
             );
         };
