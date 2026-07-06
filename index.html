@@ -222,6 +222,11 @@
                 text-align: center;
                 background-image: radial-gradient(ellipse at 50% 30%, rgba(200,150,42,0.12) 0%, transparent 60%);
             }
+
+            .onboarding-shell .app-container {
+                background-color: transparent;
+                box-shadow: none;
+            }
         }
 
         /* True full-viewport centering for the brand panel once there's enough
@@ -469,9 +474,16 @@
         };
 
         const calculateBiorhythm = (mbtiString) => {
-            const seed = new Date().getTime() + (mbtiString.split('').reduce((a,c)=>a+c.charCodeAt(0),0) * 100000);
-            const cal = (p) => Math.sin((seed / 86400000 / p) * 2 * Math.PI);
-            return { physical: Math.round(cal(23)*50+50), emotional: Math.round(cal(28)*50+50), intellectual: Math.round(cal(33)*50+50) };
+            const seedDays = (new Date().getTime() + (mbtiString.split('').reduce((a,c)=>a+c.charCodeAt(0),0) * 100000)) / 86400000;
+            const cal = (p, offsetDays = 0) => Math.sin((seedDays + offsetDays) / p * 2 * Math.PI);
+            const series = Array.from({ length: 21 }, (_, i) => {
+                const offsetDays = i - 14;
+                return { physical: cal(23, offsetDays), emotional: cal(28, offsetDays), intellectual: cal(33, offsetDays) };
+            });
+            return {
+                physical: Math.round(cal(23)*50+50), emotional: Math.round(cal(28)*50+50), intellectual: Math.round(cal(33)*50+50),
+                series
+            };
         };
 
         const getBlendedMood = (moodIds, currentLang) => {
@@ -517,35 +529,93 @@
             );
         };
 
+        // Catmull-Rom -> cubic bezier smoothing so multi-day biorhythm series render as a fluid curve.
+        const smoothPath = (pts) => {
+            if (pts.length < 3) return 'M ' + pts.map(p => p.join(',')).join(' L ');
+            let d = `M ${pts[0][0]},${pts[0][1]}`;
+            for (let i = 0; i < pts.length - 1; i++) {
+                const p0 = pts[i - 1] || pts[i];
+                const p1 = pts[i];
+                const p2 = pts[i + 1];
+                const p3 = pts[i + 2] || p2;
+                const c1x = p1[0] + (p2[0] - p0[0]) / 6;
+                const c1y = p1[1] + (p2[1] - p0[1]) / 6;
+                const c2x = p2[0] - (p3[0] - p1[0]) / 6;
+                const c2y = p2[1] - (p3[1] - p1[1]) / 6;
+                d += ` C ${c1x},${c1y} ${c2x},${c2y} ${p2[0]},${p2[1]}`;
+            }
+            return d;
+        };
+
         const WaveChart = ({ bio, lang, theme }) => {
             const isLight = theme === 'light';
-            const gridColor = isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
-            const todayLineColor = isLight ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.2)';
+            const gridColor = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
+            const todayLineColor = isLight ? 'rgba(0,0,0,0.18)' : 'rgba(255,255,255,0.16)';
             const dotStroke = isLight ? '#f7f5f2' : '#1e293b';
+            const series = bio.series || [];
             const cycles = {
                 physical: { v: bio.physical/100 * 2 - 1, color:'#0d9488', ko:'신체', en:'Physical' },
                 emotional: { v: bio.emotional/100 * 2 - 1, color:'#f59e0b', ko:'감성', en:'Emotional' },
                 intellectual: { v: bio.intellectual/100 * 2 - 1, color:'#3b82f6', ko:'지성', en:'Intellectual' }
             };
-            const W = 320, H = 80, DAYS = 21;
+            const W = 320, H = 128, TODAY_IDX = 14, DAYS = series.length || 21;
+            const PAD = 12;
             const x = (i) => (i / (DAYS-1)) * W;
-            const y = (v) => H/2 - v * (H/2 - 8);
-            const wavePath = (vTarget) => {
-                const pts = Array.from({length:DAYS}, (_,i) => [x(i), y(Math.sin((i/(DAYS-1) * Math.PI * 4) + Math.asin(vTarget)))]);
-                return 'M ' + pts.map(p=>p.join(',')).join(' L ');
-            };
+            const y = (v) => H/2 - v * (H/2 - PAD);
+            const linePts = (key) => series.map((d, i) => [x(i), y(d[key])]);
+            const todayLabel = lang === 'en' ? 'Today' : '오늘';
 
             return (
                 <div>
-                    <div className="bg-black/5 dark:bg-black/40 rounded-3xl p-5 mb-5 border border-black/5 dark:border-white/5 relative overflow-hidden">
-                        <div className="text-[11px] text-slate-400 dark:text-slate-500 mb-3 flex justify-between relative z-10">
-                            <span>← 14일 전</span><span className="text-[#c8962a] font-bold">오늘</span><span>7일 후 →</span>
+                    <div className="rounded-3xl p-5 mb-5 relative overflow-hidden" style={{ background: isLight ? 'linear-gradient(180deg, rgba(200,150,42,0.06), rgba(0,0,0,0.03))' : 'linear-gradient(180deg, rgba(200,150,42,0.08), rgba(0,0,0,0.35))', border: isLight ? '1px solid rgba(0,0,0,0.05)' : '1px solid rgba(255,255,255,0.06)' }}>
+                        <div className="text-[11px] text-slate-400 dark:text-slate-500 mb-3 flex justify-between relative z-10 font-medium">
+                            <span>← {lang==='en' ? '14 days ago' : '14일 전'}</span>
+                            <span className="text-[#c8962a] font-bold">{todayLabel}</span>
+                            <span>{lang==='en' ? '7 days ahead' : '7일 후'} →</span>
                         </div>
                         <svg width="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
+                            <defs>
+                                {Object.entries(cycles).map(([k,c]) => (
+                                    <linearGradient key={`fill-${k}`} id={`wave-fill-${k}`} x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor={c.color} stopOpacity="0.28"/>
+                                        <stop offset="100%" stopColor={c.color} stopOpacity="0"/>
+                                    </linearGradient>
+                                ))}
+                                <linearGradient id="wave-today-band" x1="0" y1="0" x2="1" y2="0">
+                                    <stop offset="0%" stopColor="#c8962a" stopOpacity="0"/>
+                                    <stop offset="50%" stopColor="#c8962a" stopOpacity={isLight ? 0.16 : 0.22}/>
+                                    <stop offset="100%" stopColor="#c8962a" stopOpacity="0"/>
+                                </linearGradient>
+                                <filter id="wave-glow" x="-40%" y="-40%" width="180%" height="180%">
+                                    <feGaussianBlur stdDeviation="2.2" result="blur"/>
+                                    <feMerge>
+                                        <feMergeNode in="blur"/>
+                                        <feMergeNode in="SourceGraphic"/>
+                                    </feMerge>
+                                </filter>
+                            </defs>
+
+                            <rect x={x(TODAY_IDX) - W/DAYS*1.4} y="0" width={W/DAYS*2.8} height={H} fill="url(#wave-today-band)"/>
                             <line x1="0" y1={H/2} x2={W} y2={H/2} stroke={gridColor} strokeWidth="1"/>
-                            <line x1={x(14)} y1="0" x2={x(14)} y2={H} stroke={todayLineColor} strokeWidth="1.5" strokeDasharray="4,3"/>
-                            {Object.entries(cycles).map(([k,c]) => <path key={k} d={wavePath(c.v)} fill="none" stroke={c.color} strokeWidth="2.5" opacity="0.85"/>)}
-                            {Object.entries(cycles).map(([k,c]) => <circle key={`dot-${k}`} cx={x(14)} cy={y(c.v)} r="4.5" fill={c.color} stroke={dotStroke} strokeWidth="2"/>)}
+                            <line x1={x(TODAY_IDX)} y1="0" x2={x(TODAY_IDX)} y2={H} stroke={todayLineColor} strokeWidth="1.5" strokeDasharray="4,3"/>
+
+                            {Object.entries(cycles).map(([k,c]) => {
+                                const pts = linePts(k);
+                                const linePath = smoothPath(pts);
+                                const areaPath = `${linePath} L ${x(DAYS-1)},${H} L 0,${H} Z`;
+                                return (
+                                    <path key={`area-${k}`} d={areaPath} fill={`url(#wave-fill-${k})`} stroke="none"/>
+                                );
+                            })}
+                            {Object.entries(cycles).map(([k,c]) => (
+                                <path key={k} d={smoothPath(linePts(k))} fill="none" stroke={c.color} strokeWidth="2.5" strokeLinecap="round" opacity="0.9" filter="url(#wave-glow)"/>
+                            ))}
+                            {Object.entries(cycles).map(([k,c]) => (
+                                <g key={`dot-${k}`}>
+                                    <circle cx={x(TODAY_IDX)} cy={y(c.v)} r="8" fill={c.color} opacity="0.25"><animate attributeName="r" values="6;10;6" dur="2.4s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.35;0.05;0.35" dur="2.4s" repeatCount="indefinite"/></circle>
+                                    <circle cx={x(TODAY_IDX)} cy={y(c.v)} r="4.5" fill={c.color} stroke={dotStroke} strokeWidth="2"/>
+                                </g>
+                            ))}
                         </svg>
                     </div>
                     <div className="flex gap-3">
