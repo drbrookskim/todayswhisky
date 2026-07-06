@@ -224,6 +224,29 @@
             }
         }
 
+        /* True full-viewport centering for the brand panel once there's enough
+           room that its centered text can't be covered by the app-container card. */
+        @media (min-width: 1280px) {
+            .onboarding-shell {
+                display: block;
+                position: relative;
+            }
+
+            .onboarding-brand-panel {
+                position: absolute;
+                inset: 0;
+                flex: none;
+            }
+
+            .onboarding-shell .app-container {
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                margin: 0;
+            }
+        }
+
         .glass-panel {
             background: var(--card);
             backdrop-filter: blur(20px);
