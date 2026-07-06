@@ -658,7 +658,7 @@
             const msgs = ["MBTI 성향 분석 중...", "바이오리듬 데이터 연산 중...", "행동경제학 메커니즘 분석 중...", "인지적 판단 편향 확인 중...", "당신을 위한 완벽한 한 잔 준비 중..."];
             useEffect(() => { const int = setInterval(() => setMsg(p => (p + 1) % msgs.length), 600); return () => clearInterval(int); }, []);
             return (
-                <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center animate-in fade-in" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+                <div className="flex-1 flex flex-col items-center justify-center p-6 text-center animate-in fade-in">
                     <div className="relative mb-12">
                         <div className="absolute inset-0 bg-[#c8962a] rounded-full blur-[40px] opacity-30 animate-pulse"></div>
                         <div className="relative p-8 bg-slate-100 dark:bg-slate-800 rounded-full shadow-2xl border border-slate-200 dark:border-slate-700"><Icon name="loader-2" className="w-14 h-14 text-[#c8962a] animate-spin" /></div>
