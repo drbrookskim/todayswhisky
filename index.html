@@ -166,6 +166,10 @@
                 flex-shrink: 0;
             }
 
+            .splash-text {
+                display: none;
+            }
+
             .desktop-nav-brand {
                 display: flex;
                 align-items: center;
@@ -671,8 +675,10 @@
             useEffect(() => { setTimeout(onFinish, 2500); }, []);
             return (
                 <div className="flex flex-col items-center justify-center h-full animate-in fade-in duration-1000">
-                    <h1 className="text-4xl font-black text-slate-900 dark:text-white playfair tracking-widest mb-3">WHISKY MBTI</h1>
-                    <p className="text-[#c8962a] text-sm font-bold tracking-widest uppercase">Curated just for you</p>
+                    <div className="splash-text">
+                        <h1 className="text-4xl font-black text-slate-900 dark:text-white playfair tracking-widest mb-3">WHISKY MBTI</h1>
+                        <p className="text-[#c8962a] text-sm font-bold tracking-widest uppercase">Curated just for you</p>
+                    </div>
                 </div>
             );
         };
