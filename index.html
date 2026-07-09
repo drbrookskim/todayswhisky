@@ -149,6 +149,12 @@
         .onboarding-brand-panel {
             display: none;
         }
+        .splash-standalone {
+            width: 100%;
+            height: 100dvh;
+            position: relative;
+            overflow: hidden;
+        }
 
         /* --- Desktop Layout (>=1024px) --- */
         @media (min-width: 1024px) {
@@ -178,10 +184,6 @@
                 width: 100%;
                 padding: 28px 48px 0 48px;
                 flex-shrink: 0;
-            }
-
-            .splash-text {
-                display: none;
             }
 
             .desktop-nav-brand {
@@ -222,6 +224,7 @@
             .onboarding-shell {
                 display: flex;
                 align-items: stretch;
+                justify-content: center;
                 min-height: 100vh;
                 width: 100%;
             }
@@ -237,7 +240,10 @@
                 background-image: radial-gradient(ellipse at 50% 30%, rgba(200,150,42,0.12) 0%, transparent 60%);
             }
 
-            .onboarding-shell .app-container {
+            /* Only blend the card into the brand panel's backdrop while both share the
+               screen (splash phase). Once the brand panel is gone, the card stands alone
+               and keeps its normal elevated card look. */
+            .onboarding-shell:has(.onboarding-brand-panel) .app-container {
                 background-color: transparent;
                 box-shadow: none;
             }
@@ -246,7 +252,7 @@
         /* True full-viewport centering for the brand panel once there's enough
            room that its centered text can't be covered by the app-container card. */
         @media (min-width: 1280px) {
-            .onboarding-shell {
+            .onboarding-shell:has(.onboarding-brand-panel) {
                 display: block;
                 position: relative;
             }
@@ -257,7 +263,7 @@
                 flex: none;
             }
 
-            .onboarding-shell .app-container {
+            .onboarding-shell:has(.onboarding-brand-panel) .app-container {
                 position: absolute;
                 top: 0;
                 right: 0;
@@ -381,8 +387,9 @@
             background: #0a0806;
             border: 1px solid rgba(200,150,42,0.25);
             border-radius: 24px;
-            padding: 26px 22px;
-            max-width: 74%;
+            padding: 32px 26px;
+            width: 100%;
+            max-width: min(360px, 82%);
             box-shadow: 0 0 60px 10px rgba(0,0,0,0.6);
         }
     </style>
@@ -912,8 +919,7 @@
 
         // --- 3. Screens ---
         
-        const Splash = ({ onFinish }) => {
-            useEffect(() => { setTimeout(onFinish, 2500); }, []);
+        const Splash = ({ onStartQuiz, onDirectSelect, lang }) => {
             return (
                 <div className="relative h-full animate-in fade-in duration-1000">
                     <div className="splash-tunnel-scene">
@@ -924,29 +930,19 @@
                     </div>
                     <div className="splash-tunnel-center">
                         <div className="splash-tunnel-card splash-text">
-                            <h1 className="text-[1.65rem] font-black text-white playfair tracking-wide mb-2 text-center whitespace-nowrap">WHISKY MBTI</h1>
-                            <p className="text-[#c8962a] text-xs font-bold tracking-widest uppercase text-center">Curated just for you</p>
+                            <div className="text-5xl mb-3 text-center">🥃</div>
+                            <h1 className="text-[1.5rem] font-black text-white playfair tracking-wide mb-2 text-center whitespace-nowrap">WHISKY MBTI</h1>
+                            <h2 className="text-lg font-bold text-white mb-2 text-center leading-tight">{TEXT[lang].onboard_title}</h2>
+                            <p className="text-slate-400 text-sm leading-relaxed mb-6 text-center whitespace-pre-line">{TEXT[lang].onboard_sub}</p>
+                            <div className="flex flex-col gap-3 w-full">
+                                <button onClick={onStartQuiz} className="w-full py-4 rounded-[18px] bg-[#c8962a] text-white font-bold text-base shadow-xl shadow-[#c8962a]/30 hover:bg-[#a67c20] transition-colors">{TEXT[lang].start_quiz}</button>
+                                <button onClick={onDirectSelect} className="w-full py-4 rounded-[18px] border-2 border-white/15 text-white font-bold text-sm hover:bg-white/5 transition-colors">{TEXT[lang].skip_quiz}</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             );
         };
-
-        const Onboarding = ({ onStartQuiz, onDirectSelect, lang }) => (
-            <div className="flex flex-col h-full pt-[calc(env(safe-area-inset-top,48px)+32px)] p-8 animate-in slide-in-from-bottom-8 duration-500">
-                <div className="flex-1 flex flex-col justify-center items-center text-center">
-                    <div className="w-28 h-28 bg-[#c8962a]/10 rounded-full flex items-center justify-center mb-10 border border-[#c8962a]/20 shadow-[0_0_30px_rgba(200,150,42,0.15)]">
-                        <Icon name="compass" className="w-12 h-12 text-[#c8962a]" />
-                    </div>
-                    <h2 className="text-[2rem] max-[400px]:text-[1.6rem] font-black text-slate-900 dark:text-white mb-5 leading-tight whitespace-nowrap tracking-tighter">{TEXT[lang].onboard_title}</h2>
-                    <p className="text-slate-500 dark:text-slate-400 text-lg leading-relaxed mb-14 px-2 whitespace-pre-line">{TEXT[lang].onboard_sub}</p>
-                </div>
-                <div className="flex flex-col gap-4 pb-4">
-                    <button onClick={onStartQuiz} className="w-full py-5 rounded-[20px] bg-[#c8962a] text-white font-bold text-xl shadow-xl shadow-[#c8962a]/30 hover:bg-[#a67c20] transition-colors">{TEXT[lang].start_quiz}</button>
-                    <button onClick={onDirectSelect} className="w-full py-5 rounded-[20px] border-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">{TEXT[lang].skip_quiz}</button>
-                </div>
-            </div>
-        );
 
         const Quiz = ({ onComplete, lang }) => {
             const [qIdx, setQIdx] = useState(0);
@@ -1290,7 +1286,7 @@
         // --- 4. Main App Component & Render ---
 
         const App = () => {
-            const [appState, setAppState] = useState('splash'); // splash, onboard, quiz, direct, main
+            const [appState, setAppState] = useState('onboard'); // onboard, quiz, direct, main
             const [mbti, setMbti] = useState(null);
             const [lang, setLang] = useState('ko');
             const [theme, setTheme] = useState('dark');
@@ -1303,6 +1299,7 @@
                 if (savedLang) setLang(savedLang);
                 if (savedMbti) {
                     setMbti(savedMbti);
+                    setAppState('main');
                 }
                 if (savedTheme) setTheme(savedTheme);
                 else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) setTheme('light');
@@ -1330,8 +1327,16 @@
                 setActiveTab('home');
             };
 
-            return appState !== 'main' ? (
-                <div className="onboarding-shell">
+            return appState === 'onboard' ? (
+                <div className="splash-standalone">
+                    <Splash
+                        onStartQuiz={() => setAppState('quiz')}
+                        onDirectSelect={() => setAppState('direct')}
+                        lang={lang}
+                    />
+                </div>
+            ) : appState !== 'main' ? (
+                <div className="onboarding-shell animate-in fade-in duration-700">
                     <div className="onboarding-brand-panel">
                         <div className="text-[4rem] mb-6">🥃</div>
                         <h1 className="playfair text-4xl font-black text-slate-900 dark:text-white tracking-widest mb-4">WHISKY MBTI</h1>
@@ -1339,19 +1344,6 @@
                         <p className="text-slate-500 dark:text-slate-400 text-lg leading-relaxed whitespace-pre-line max-w-md">{TEXT[lang].onboard_sub}</p>
                     </div>
                     <div className="app-container">
-                        {appState === 'splash' && <Splash onFinish={() => {
-                            const savedMbti = safeStorage.getItem('whiskey_mbti');
-                            setAppState(savedMbti ? 'main' : 'onboard');
-                        }} />}
-
-                        {appState === 'onboard' && (
-                            <Onboarding
-                                onStartQuiz={() => setAppState('quiz')}
-                                onDirectSelect={() => setAppState('direct')}
-                                lang={lang}
-                            />
-                        )}
-
                         {appState === 'quiz' && <Quiz onComplete={handleMbtiComplete} lang={lang} />}
 
                         {appState === 'direct' && (
