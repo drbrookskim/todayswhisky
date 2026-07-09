@@ -1335,6 +1335,10 @@
                         lang={lang}
                     />
                 </div>
+            ) : appState === 'quiz' ? (
+                <div className="app-container animate-in fade-in duration-700">
+                    <Quiz onComplete={handleMbtiComplete} lang={lang} />
+                </div>
             ) : appState !== 'main' ? (
                 <div className="onboarding-shell animate-in fade-in duration-700">
                     <div className="onboarding-brand-panel">
@@ -1344,8 +1348,6 @@
                         <p className="text-slate-500 dark:text-slate-400 text-lg leading-relaxed whitespace-pre-line max-w-md">{TEXT[lang].onboard_sub}</p>
                     </div>
                     <div className="app-container">
-                        {appState === 'quiz' && <Quiz onComplete={handleMbtiComplete} lang={lang} />}
-
                         {appState === 'direct' && (
                             <DirectSelect
                                 onComplete={handleMbtiComplete}
