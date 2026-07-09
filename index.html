@@ -143,12 +143,6 @@
             display: none;
         }
 
-        .onboarding-shell {
-            display: block;
-        }
-        .onboarding-brand-panel {
-            display: none;
-        }
         .splash-standalone {
             width: 100%;
             height: 100dvh;
@@ -225,55 +219,6 @@
                 background: rgba(20, 184, 166, 0.12);
             }
 
-            .onboarding-shell {
-                display: flex;
-                align-items: stretch;
-                justify-content: center;
-                min-height: 100vh;
-                width: 100%;
-            }
-
-            .onboarding-brand-panel {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                flex: 1;
-                padding: 64px;
-                text-align: center;
-                background-image: radial-gradient(ellipse at 50% 30%, rgba(200,150,42,0.12) 0%, transparent 60%);
-            }
-
-            /* Only blend the card into the brand panel's backdrop while both share the
-               screen (splash phase). Once the brand panel is gone, the card stands alone
-               and keeps its normal elevated card look. */
-            .onboarding-shell:has(.onboarding-brand-panel) .app-container {
-                background-color: transparent;
-                box-shadow: none;
-            }
-        }
-
-        /* True full-viewport centering for the brand panel once there's enough
-           room that its centered text can't be covered by the app-container card. */
-        @media (min-width: 1280px) {
-            .onboarding-shell:has(.onboarding-brand-panel) {
-                display: block;
-                position: relative;
-            }
-
-            .onboarding-brand-panel {
-                position: absolute;
-                inset: 0;
-                flex: none;
-            }
-
-            .onboarding-shell:has(.onboarding-brand-panel) .app-container {
-                position: absolute;
-                top: 0;
-                right: 0;
-                bottom: 0;
-                margin: 0;
-            }
         }
 
         .glass-panel {
@@ -1343,23 +1288,13 @@
                 <div className="app-container animate-in fade-in duration-700">
                     <Quiz onComplete={handleMbtiComplete} lang={lang} />
                 </div>
-            ) : appState !== 'main' ? (
-                <div className="onboarding-shell animate-in fade-in duration-700">
-                    <div className="onboarding-brand-panel">
-                        <div className="text-[4rem] mb-6">🥃</div>
-                        <h1 className="playfair text-4xl font-black text-slate-900 dark:text-white tracking-widest mb-4">WHISKY MBTI</h1>
-                        <h2 className="text-2xl font-bold text-slate-700 dark:text-slate-200 mb-4">{TEXT[lang].onboard_title}</h2>
-                        <p className="text-slate-500 dark:text-slate-400 text-lg leading-relaxed whitespace-pre-line max-w-md">{TEXT[lang].onboard_sub}</p>
-                    </div>
-                    <div className="app-container">
-                        {appState === 'direct' && (
-                            <DirectSelect
-                                onComplete={handleMbtiComplete}
-                                lang={lang}
-                                onBack={() => setAppState('onboard')}
-                            />
-                        )}
-                    </div>
+            ) : appState === 'direct' ? (
+                <div className="app-container animate-in fade-in duration-700">
+                    <DirectSelect
+                        onComplete={handleMbtiComplete}
+                        lang={lang}
+                        onBack={() => setAppState('onboard')}
+                    />
                 </div>
             ) : (
                 <div className="app-container is-main">
