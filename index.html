@@ -316,6 +316,75 @@
         .hide-scroll::-webkit-scrollbar {
             display: none;
         }
+
+        /* Splash tunnel background: perspective "hallway" of oversized brand type,
+           converging on the centered title card. */
+        .splash-tunnel-scene {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            background: #0a0806;
+            perspective: 320px;
+            container-type: inline-size;
+            container-name: splash-tunnel;
+        }
+        .splash-tunnel-wall {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            backface-visibility: hidden;
+        }
+        .splash-tunnel-wall span {
+            display: inline-block;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            color: #c8962a;
+            white-space: nowrap;
+            line-height: 1;
+            letter-spacing: -0.02em;
+        }
+        .splash-tunnel-top {
+            top: 0; left: -40%; width: 180%; height: 46%;
+            transform-origin: top center;
+            transform: rotateX(-70deg);
+        }
+        .splash-tunnel-top span { font-size: 20cqw; transform: translateY(-38%); }
+        .splash-tunnel-bottom {
+            bottom: 0; left: -40%; width: 180%; height: 46%;
+            transform-origin: bottom center;
+            transform: rotateX(70deg);
+        }
+        .splash-tunnel-bottom span { font-size: 20cqw; transform: translateY(38%); }
+        .splash-tunnel-left {
+            top: -60%; left: 0; height: 220%; width: 30%;
+            transform-origin: left center;
+            transform: rotateY(70deg);
+        }
+        .splash-tunnel-left span { font-size: 16cqw; transform: rotate(-90deg) translateY(0); }
+        .splash-tunnel-right {
+            top: -60%; right: 0; height: 220%; width: 30%;
+            transform-origin: right center;
+            transform: rotateY(-70deg);
+        }
+        .splash-tunnel-right span { font-size: 16cqw; transform: rotate(90deg); }
+        .splash-tunnel-center {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        .splash-tunnel-card {
+            background: #0a0806;
+            border: 1px solid rgba(200,150,42,0.25);
+            border-radius: 24px;
+            padding: 26px 22px;
+            max-width: 74%;
+            box-shadow: 0 0 60px 10px rgba(0,0,0,0.6);
+        }
     </style>
 </head>
 <body>
@@ -846,10 +915,18 @@
         const Splash = ({ onFinish }) => {
             useEffect(() => { setTimeout(onFinish, 2500); }, []);
             return (
-                <div className="flex flex-col items-center justify-center h-full animate-in fade-in duration-1000">
-                    <div className="splash-text">
-                        <h1 className="text-4xl font-black text-slate-900 dark:text-white playfair tracking-widest mb-3">WHISKY MBTI</h1>
-                        <p className="text-[#c8962a] text-sm font-bold tracking-widest uppercase">Curated just for you</p>
+                <div className="relative h-full animate-in fade-in duration-1000">
+                    <div className="splash-tunnel-scene">
+                        <div className="splash-tunnel-wall splash-tunnel-top"><span>WHISKY MBTI</span></div>
+                        <div className="splash-tunnel-wall splash-tunnel-bottom"><span>YOUR PERFECT DRAM</span></div>
+                        <div className="splash-tunnel-wall splash-tunnel-left"><span>MOOD</span></div>
+                        <div className="splash-tunnel-wall splash-tunnel-right"><span>MOOD</span></div>
+                    </div>
+                    <div className="splash-tunnel-center">
+                        <div className="splash-tunnel-card splash-text">
+                            <h1 className="text-[1.65rem] font-black text-white playfair tracking-wide mb-2 text-center whitespace-nowrap">WHISKY MBTI</h1>
+                            <p className="text-[#c8962a] text-xs font-bold tracking-widest uppercase text-center">Curated just for you</p>
+                        </div>
                     </div>
                 </div>
             );
