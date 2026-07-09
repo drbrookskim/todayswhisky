@@ -190,6 +190,10 @@
                 display: flex;
                 align-items: center;
                 gap: 10px;
+                background: transparent;
+                border: none;
+                padding: 0;
+                cursor: pointer;
             }
 
             .desktop-nav .nav-menu {
@@ -1360,10 +1364,10 @@
             ) : (
                 <div className="app-container is-main">
                     <nav className="desktop-nav">
-                        <div className="desktop-nav-brand">
+                        <button className="desktop-nav-brand" onClick={() => setActiveTab('home')}>
                             <span className="text-xl">🥃</span>
                             <span className="playfair font-bold text-lg text-slate-900 dark:text-white">{TEXT[lang].title}</span>
-                        </div>
+                        </button>
                         <div className="nav-menu">
                             <button className={`nav-menu-item ${activeTab === 'home' ? 'active' : ''}`} onClick={() => setActiveTab('home')}>
                                 <Icon name="home" className="w-4 h-4" />
