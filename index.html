@@ -345,13 +345,15 @@
         /* Portal-suck transition: the card and background get pulled into the
            vanishing point when a button is pressed, then a flash covers the cut. */
         @keyframes splashPortalCard {
-            0% { transform: scale(1) rotate(0deg); opacity: 1; }
-            55% { transform: scale(0.82) rotate(10deg); opacity: 1; }
-            100% { transform: scale(0) rotate(480deg); opacity: 0; }
+            0% { transform: scale(1); opacity: 1; filter: blur(0px); }
+            30% { transform: scale(1.3); opacity: 1; filter: blur(0px); }
+            70% { transform: scale(3.2); opacity: 0.9; filter: blur(2px); }
+            100% { transform: scale(7); opacity: 0; filter: blur(10px); }
         }
         @keyframes splashPortalScene {
-            0% { transform: scale(1); filter: brightness(1) saturate(1); }
-            100% { transform: scale(2.4); filter: brightness(2.4) saturate(1.4); }
+            0% { transform: scale(1); filter: brightness(1) saturate(1) blur(0px); }
+            60% { transform: scale(2.6); filter: brightness(2.2) saturate(1.5) blur(0px); }
+            100% { transform: scale(5.5); filter: brightness(4) saturate(1.8) blur(2px); }
         }
         @keyframes splashPortalFlash {
             0%, 65% { opacity: 0; }
@@ -361,10 +363,10 @@
             transform-origin: center center;
         }
         .splash-portal-active .splash-portal-card {
-            animation: splashPortalCard 0.6s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards;
+            animation: splashPortalCard 0.6s cubic-bezier(0.55, 0.06, 0.68, 0.19) forwards;
         }
         .splash-portal-active .splash-portal-scene {
-            animation: splashPortalScene 0.6s ease-in forwards;
+            animation: splashPortalScene 0.6s cubic-bezier(0.55, 0.06, 0.68, 0.19) forwards;
         }
         .splash-portal-flash {
             position: absolute;
